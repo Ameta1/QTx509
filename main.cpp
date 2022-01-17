@@ -1,8 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-
 #include <QLocale>
 #include <QTranslator>
+#include <sslmodel.h>
 
 int main(int argc, char *argv[])
 {
@@ -26,7 +26,10 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.load(url);
-
+    EVP_PKEY *pkey = EVP_PKEY_new();
+    sslmodel::generateRSAKey(&pkey, 4096);
+    sslmodel::saveEVPKey(&pkey, "/home/gregory/MY_COOL_KEY.pem");
+    sslmodel::generateCertReq("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERTIFICATE_REQUEST.pem");
 
     return app.exec();
 }

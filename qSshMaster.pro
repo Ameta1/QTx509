@@ -1,7 +1,8 @@
 QT += quick
 
 SOURCES += \
-        main.cpp
+        main.cpp \
+        sslmodel.cpp
 
 resources.files = main.qml 
 resources.prefix = /$${TARGET}
@@ -11,8 +12,6 @@ TRANSLATIONS += \
     qSshMaster_ru_RU.ts
 CONFIG += lrelease
 CONFIG += embed_translations
-
-PKGCONFIG += libssl
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -24,3 +23,11 @@ QML_DESIGNER_IMPORT_PATH =
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+HEADERS += \
+    sslmodel.h
+
+LIBS += -L$$PWD/../openssl/ -lcrypto
+
+INCLUDEPATH += $$PWD/../openssl/include
+DEPENDPATH += $$PWD/../openssl/
