@@ -27,9 +27,11 @@ int main(int argc, char *argv[])
     }, Qt::QueuedConnection);
     engine.load(url);
     EVP_PKEY *pkey = EVP_PKEY_new();
-    sslmodel::generateRSAKey(&pkey, 4096);
-    sslmodel::saveEVPKey(&pkey, "/home/gregory/MY_COOL_KEY.pem");
-    sslmodel::generateCertReq("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERTIFICATE_REQUEST.pem");
+    sslmodel::generateECKey(&pkey);
+//    sslmodel::generateRSAKey(&pkey, 4096);
+//    sslmodel::saveEVPKey(&pkey, "/home/gregory/MY_COOL_KEY.pem");
+//    sslmodel::generateCertReq("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERTIFICATE_REQUEST.pem");
+//    sslmodel::isValidKeys("/home/gregory/MY_COOL_KEY.pem");
 
     return app.exec();
 }

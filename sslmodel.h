@@ -15,7 +15,10 @@ public:
     int static generateECKey(EVP_PKEY **pkey);
     int static generateRSAKey(EVP_PKEY **pkey, int numberOfBits);
     int static saveEVPKey(EVP_PKEY **pkey, QString name);
-    int static generateCertReq(QString keyPath, QString certPath);
+    int static generateCertReq(QString keyPath, QString reqPath);
+    int static signCertReq(QString reqPath);
+    bool static isValidKeys(QString keyPath);
+    bool static isValidCertReq(QString reqPath);
 };
 
 #endif // SSLMODEL_H

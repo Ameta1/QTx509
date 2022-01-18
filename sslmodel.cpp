@@ -1,26 +1,23 @@
 #include "sslmodel.h"
+#include "opensslAliases.h"
 #include <QtDebug>
 
 #include <openssl/x509.h>
+#include <openssl/err.h>
+
 sslmodel::sslmodel(QObject *parent)
     : QObject{parent}
 {
 
 }
 
-template<typename T, typename D>
-std::unique_ptr<T, D> handlePointers(T* pointer, D deleter)
-{
-    return std::unique_ptr<T, D>{pointer, deleter};
-}
-
 int sslmodel::generateECKey(EVP_PKEY **pkey) {
     //TODO: Proper error handling
-    EVP_PKEY_CTX *ctx = NULL;
-    handlePointers(ctx, EVP_PKEY_CTX_free);
+    EVP_PKEY_CTX_ptr ctx (EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL), ::EVP_PKEY_CTX_free);
+
     int ret;
     ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
-
+    handlePointers(ctx, check);
     if (ctx == NULL) {
         return -1;
     }
@@ -43,6 +40,7 @@ int sslmodel::generateECKey(EVP_PKEY **pkey) {
     return ret;
 }
 
+// this takes a lot of time, consider launching it in a separate thread
 int sslmodel::generateRSAKey(EVP_PKEY **pkey, int numberOfBits) {
     //TODO: Proper error handling
     BIGNUM *publicKeyExponent = NULL;
@@ -92,7 +90,7 @@ int sslmodel::saveEVPKey(EVP_PKEY **pkey, QString path) {
 //                                                passphrase.size(), NULL, NULL);
 }
 
-int sslmodel::generateCertReq(QString keyPath, QString certPath) {
+int sslmodel::generateCertReq(QString keyPath, QString reqPath) {
     FILE *keyFile = NULL;
     FILE *certFile = NULL;
     //TODO: make them class members
@@ -171,7 +169,7 @@ int sslmodel::generateCertReq(QString keyPath, QString certPath) {
     if (ret <= 0) {
         return ret;
     }
-    if (NULL == (certFile = fopen(certPath.toLocal8Bit(), "w"))) {
+    if (NULL == (certFile = fopen(reqPath.toLocal8Bit(), "w"))) {
         fclose(keyFile);
         return ret;
     }
@@ -181,5 +179,90 @@ int sslmodel::generateCertReq(QString keyPath, QString certPath) {
         return ret;
     }
     fclose(keyFile);
-    return 0;
+    ret = 0;
+    return ret;
+}
+
+int sslmodel::signCertReq(QString reqPath) {
+    FILE* keyFile = NULL;
+    handlePointers(keyFile, fclose);
+    if (NULL == (keyFile = fopen(reqPath.toLocal8Bit(), "r"))) {
+        return false;
+    }
+    X509_REQ *request = PEM_read_X509_REQ(keyFile, NULL, NULL, NULL);
+    handlePointers(request, X509_REQ_free);
+}
+
+bool sslmodel::isValidKeys(QString keyPath) {
+    //consider moving this default values somewhere else
+    size_t len = 100;
+    char buf[100];
+    FILE* keyFile;
+    if (NULL == (keyFile = fopen(keyPath.toLocal8Bit(), "r"))) {
+        fclose(keyFile);
+        return false;
+    }
+    EVP_PKEY* pkey = PEM_read_PrivateKey(keyFile, NULL, NULL, NULL);
+    pkey = PEM_read_PUBKEY(keyFile, NULL, NULL, NULL);
+    fclose(keyFile);
+    handlePointers(pkey, EVP_PKEY_free);
+    unsigned long err = ERR_get_error();
+    if (err != 0) {
+        //there would be a signal to interface
+        ERR_error_string_n(err, buf, len);
+        return false;
+    }
+    int type = EVP_PKEY_type(pkey->type);
+    switch (type)
+    {
+    case EVP_PKEY_RSA:
+    case EVP_PKEY_RSA2: {
+        RSA* rsa = EVP_PKEY_get1_RSA(pkey);
+        handlePointers(rsa, RSA_free);
+        if (1 != RSA_check_key(rsa)) {
+            //there would be a signal to interface
+            err = ERR_get_error();
+            ERR_error_string_n(err, buf, len);
+            return false;
+        }
+        break;
+    }
+    case EVP_PKEY_EC: {
+        EC_KEY* ec = EVP_PKEY_get1_EC_KEY(pkey);
+        handlePointers(ec, EC_KEY_free);
+        if (1 != EC_KEY_check_key(ec)) {
+            //there would be a signal to interface
+            err = ERR_get_error();
+            ERR_error_string_n(err, buf, len);
+            return false;
+        }
+        break;
+    }
+    default:
+        //there would be a signal to interface
+        return false;
+    }
+
+    return true;
+}
+
+bool sslmodel::isValidCertReq(QString reqPath) {
+    //consider moving this default values somewhere else
+    size_t len = 100;
+    char buf[100];
+    FILE* keyFile;
+    if (NULL == (keyFile = fopen(reqPath.toLocal8Bit(), "r"))) {
+        fclose(keyFile);
+        return false;
+    }
+    X509_REQ *request = PEM_read_X509_REQ(keyFile, NULL, NULL, NULL);
+    fclose(keyFile);
+    handlePointers(request, X509_REQ_free);
+    unsigned long err = ERR_get_error();
+    if (err != 0) {
+        //there would be a signal to interface
+        ERR_error_string_n(err, buf, len);
+        return false;
+    }
+    return true;
 }
