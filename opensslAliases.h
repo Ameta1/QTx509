@@ -5,6 +5,8 @@
 
 using EC_KEY_ptr = std::unique_ptr<EC_KEY, decltype(&::EC_KEY_free)>;
 
+using BIGNUM_ptr = std::unique_ptr<BIGNUM, decltype(&::BN_free)>;
+
 using RSA_ptr = std::unique_ptr<RSA, decltype(&::RSA_free)>;
 
 using EVP_PKEY_ptr = std::unique_ptr<EVP_PKEY, decltype(&::EVP_PKEY_free)>;

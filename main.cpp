@@ -3,7 +3,7 @@
 #include <QLocale>
 #include <QTranslator>
 #include <sslmodel.h>
-
+#include <opensslAliases.h>
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -26,12 +26,13 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.load(url);
-    EVP_PKEY *pkey = EVP_PKEY_new();
-    sslmodel::generateECKey(&pkey);
-//    sslmodel::generateRSAKey(&pkey, 4096);
-//    sslmodel::saveEVPKey(&pkey, "/home/gregory/MY_COOL_KEY.pem");
-//    sslmodel::generateCertReq("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERTIFICATE_REQUEST.pem");
-//    sslmodel::isValidKeys("/home/gregory/MY_COOL_KEY.pem");
+
+    EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
+    EVP_PKEY *pkeyDP = pkey.get();
+    qDebug() <<"generateECKey"<< sslmodel::generateECKey(&pkeyDP);
+    qDebug() <<"saveEVPKey"<< sslmodel::saveEVPKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
+    qDebug() <<"generateCertReq"<< sslmodel::generateCertReq("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERTIFICATE_REQUEST.pem");
+    qDebug() <<"isValidKeys"<< sslmodel::isValidKeys("/home/gregory/MY_COOL_KEY.pem");
 
     return app.exec();
 }
