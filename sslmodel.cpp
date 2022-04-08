@@ -1,5 +1,6 @@
 #include "sslmodel.h"
 #include "opensslAliases.h"
+#include "exitCodes.h"
 #include <QtDebug>
 
 #include <openssl/x509.h>
@@ -17,22 +18,22 @@ int sslmodel::generateECKey(EVP_PKEY **pkey) {
 
     int ret;
     if (ctx == NULL) {
-        return -1;
+        return Fail;
     }
     ret = EVP_PKEY_keygen_init(ctx.get());
     if (ret != 1) {
         qDebug() << ret;
-        return ret;
+        return Fail;
     }
     ret = EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.get(), NID_X9_62_prime256v1);
     if (ret != 1) {
         qDebug() << ret;
-        return ret;
+        return Fail;
     }
     ret = EVP_PKEY_keygen(ctx.get(), pkey);
     if (ret != 1) {
         qDebug() << ret;
-        return ret;
+        return Fail;
     }
     ret = 0;
     return ret;
@@ -82,41 +83,8 @@ int sslmodel::saveEVPKey(EVP_PKEY **pkey, QString path) {
 //                                                passphrase.size(), NULL, NULL);
 }
 
-int sslmodel::generateCertReq(QString keyPath, QString reqPath) {
-    //TODO: make them class members
-    const char		*szCountry = "RU";
-    const char		*szProvince = "77";
-    const char		*szCity = "Zelenograd";
-    const char		*szOrganization = "MIET";
-    const char		*szCommon = "localhost";
-    int x509version = 3;
-
+int sslmodel::addInfo(X509_NAME *x509Name) {
     int ret = 1;
-
-    FILE_ptr keyFile (fopen(keyPath.toLocal8Bit(), "r"), ::fclose);
-    if (keyFile.get() == NULL) {
-        return ret;
-    }
-
-    // Let's made these keys separate, to avoid confusion,
-    // despite they can be stored in a single structure
-    EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(keyFile.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
-    if (privateKey.get() == NULL) {
-        return ret;
-    }
-    EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(keyFile.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
-    if (publicKey.get() == NULL) {
-        return ret;
-    }
-
-    X509_REQ_ptr x509Req (X509_REQ_new(), ::X509_REQ_free);
-    ret = X509_REQ_set_version(x509Req.get(), x509version);
-    if (ret != 1) {
-        return ret;
-    }
-
-    X509_NAME *x509Name = X509_REQ_get_subject_name(x509Req.get()); // no need to free, will be freed as part of x509Req
-
     ret = X509_NAME_add_entry_by_txt(x509Name,"C", MBSTRING_ASC, (const unsigned char*)szCountry, -1, -1, 0);
     if (ret != 1) {
         return ret;
@@ -137,8 +105,34 @@ int sslmodel::generateCertReq(QString keyPath, QString reqPath) {
     if (ret != 1) {
         return ret;
     }
-//    X509_gmtime_adj(X509_get_notBefore(),0);
-//    X509_gmtime_adj(X509_get_notAfter(),(long)60*60*24*days);
+    return 0;
+}
+
+int sslmodel::generateCertReq(QString keyPath, QString reqPath) {
+    int ret = 1;
+
+    FILE_ptr keyFile (fopen(keyPath.toLocal8Bit(), "r"), ::fclose);
+    if (keyFile.get() == NULL) {
+        return ret;
+    }
+    EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(keyFile.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
+    if (privateKey.get() == NULL) {
+        return ret;
+    }
+    EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(keyFile.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
+    if (publicKey.get() == NULL) {
+        return ret;
+    }
+
+    X509_REQ_ptr x509Req (X509_REQ_new(), ::X509_REQ_free);
+    ret = X509_REQ_set_version(x509Req.get(), x509version);
+    if (ret != 1) {
+        return ret;
+    }
+
+    X509_NAME *x509Name = X509_REQ_get_subject_name(x509Req.get()); // no need to free, will be freed as part of x509Req
+    addInfo(x509Name);
+
     ret = X509_REQ_set_pubkey(x509Req.get(), publicKey.get());
     if (ret != 1) {
         return ret;
@@ -161,17 +155,62 @@ int sslmodel::generateCertReq(QString keyPath, QString reqPath) {
     return ret;
 }
 
-int sslmodel::signCertReq(QString reqPath) {
+int sslmodel::createRootX509Cert(QString keyPath, QString certPath, int daysValid) {
     int ret = 1;
-    FILE_ptr keyFile (fopen(reqPath.toLocal8Bit(), "r"), ::fclose);
+
+    FILE_ptr keyFile (fopen(keyPath.toLocal8Bit(), "r"), ::fclose);
     if (keyFile.get() == NULL) {
         return ret;
     }
-    X509_REQ_ptr x509Req (PEM_read_X509_REQ(keyFile.get(), NULL, NULL, NULL), ::X509_REQ_free);
-    if (x509Req.get() == NULL) {
+    EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(keyFile.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
+    if (privateKey.get() == NULL) {
         return ret;
     }
-    return 0;
+    EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(keyFile.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
+    if (publicKey.get() == NULL) {
+        return ret;
+    }
+
+    X509_ptr cert (X509_new(), ::X509_free);
+
+    ret = X509_set_pubkey(cert.get(), publicKey.get());
+    if (ret != 1) {
+        return ret;
+    }
+
+    X509_NAME *x509Name = X509_get_subject_name(cert.get()); // no need to free, will be freed as part of x509Req
+    ret = addInfo(x509Name);
+    if (ret != 0) {
+        return ret;
+    }
+
+    X509_gmtime_adj(X509_get_notBefore(cert.get()), 0);
+    X509_gmtime_adj(X509_get_notAfter(cert.get()), daysValid * 24 * 3600);
+
+    ret = X509_sign(cert.get(), privateKey.get(), EVP_sha256());
+    if (ret == 0) {
+        //HANDLE ME
+        return ret;
+    }
+    ret = 1;
+
+    FILE_ptr certFile (fopen(certPath.toLocal8Bit(), "w"), ::fclose);
+    if (certFile.get() == NULL) {
+        return ret;
+    }
+    ret = PEM_write_X509(certFile.get(), cert.get());
+    if (ret == 0) {
+        //HANDLE ME
+        return ret;
+    }
+    ret = 0;
+    return ret;
+}
+
+int sslmodel::createIntermediateX509Cert(QString keyPath, QString certPath, int daysValid) {
+    int ret = 1;
+    ret = 0;
+    return ret;
 }
 
 bool sslmodel::isValidKeys(QString keyPath) {

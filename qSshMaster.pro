@@ -25,6 +25,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    exitCodes.h \
     opensslAliases.h \
     sslmodel.h
 
@@ -32,3 +33,6 @@ LIBS += -L$$PWD/../openssl/ -lcrypto
 
 INCLUDEPATH += $$PWD/../openssl/include
 DEPENDPATH += $$PWD/../openssl/
+
+DISTFILES += \
+    terminology

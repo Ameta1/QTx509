@@ -12,13 +12,23 @@ class sslmodel : public QObject
 public:
     explicit sslmodel(QObject *parent = nullptr);
 
-    int static generateECKey(EVP_PKEY **pkey);
-    int static generateRSAKey(EVP_PKEY **pkey, int numberOfBits);
-    int static saveEVPKey(EVP_PKEY **pkey, QString name);
-    int static generateCertReq(QString keyPath, QString reqPath);
-    int static signCertReq(QString reqPath);
-    bool static isValidKeys(QString keyPath);
-    bool static isValidCertReq(QString reqPath);
+    int generateECKey(EVP_PKEY **pkey);
+    int generateRSAKey(EVP_PKEY **pkey, int numberOfBits);
+    int saveEVPKey(EVP_PKEY **pkey, QString name);
+    int generateCertReq(QString keyPath, QString reqPath);
+    int createRootX509Cert(QString keyPath, QString certPath, int daysValid);
+    int createIntermediateX509Cert(QString keyPath, QString certPath, int daysValid);
+    int signCertReq(QString reqPath);
+    bool isValidKeys(QString keyPath);
+    bool isValidCertReq(QString reqPath);
+private:
+    int addInfo(X509_NAME *x509Name);
+    const char		*szCountry = "RU";
+    const char		*szProvince = "77";
+    const char		*szCity = "Zelenograd";
+    const char		*szOrganization = "MIET";
+    const char		*szCommon = "localhost";
+    int x509version = 3;
 };
 
 #endif // SSLMODEL_H

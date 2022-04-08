@@ -29,10 +29,13 @@ int main(int argc, char *argv[])
 
     EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
     EVP_PKEY *pkeyDP = pkey.get();
-    qDebug() <<"generateECKey"<< sslmodel::generateECKey(&pkeyDP);
-    qDebug() <<"saveEVPKey"<< sslmodel::saveEVPKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
-    qDebug() <<"generateCertReq"<< sslmodel::generateCertReq("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERTIFICATE_REQUEST.pem");
-    qDebug() <<"isValidKeys"<< sslmodel::isValidKeys("/home/gregory/MY_COOL_KEY.pem");
+    sslmodel azaza(new QObject);
+    qDebug() <<"generateECKey"<< azaza.generateECKey(&pkeyDP);
+    qDebug() <<"saveEVPKey"<< azaza.saveEVPKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
+    qDebug() << "createRootCert" << azaza.createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", 3650);
+
+//    qDebug() <<"generateCertReq"<< sslmodel::generateCertReq("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERTIFICATE_REQUEST.pem");
+//    qDebug() <<"isValidKeys"<< sslmodel::isValidKeys("/home/gregory/MY_COOL_KEY.pem");
 
     return app.exec();
 }
