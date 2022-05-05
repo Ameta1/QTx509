@@ -48,42 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQuickStyle>
-#include <QLibrary>
+import QtQuick
+import QtQuick.Controls
 
-extern "C"
-{
-   #include<gost-engine.h>
-}
+ToolBar {
+    id: background
 
-#include "hierarchymodel.h"
-#include <openssl/obj_mac.h>
-#include <openssl/x509.h>
-#include <openssl/err.h>
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include "ssldefs.h"
-#include "sslfunctions.h"
-
-int main(int argc, char *argv[])
-{
-    QGuiApplication app(argc, argv);
-    OSSL_LIB_CTX_load_config(NULL, "/home/gregory/diplom/contactlist/openssl.cnf");
-    ENGINE_load_gost();
-    qmlRegisterType<HierarchyModel>("Backend", 1, 0, "HierarchyModel");
-
-    EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
-    EVP_PKEY *pkeyDP = pkey.get();
-    qDebug() <<"generateGOSTKey"<< sslFunctions::generateGOSTaKey(&pkeyDP);
-//    qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
-//    qDebug() << "createRootCert" << sslFunctions::createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", 3650);
-
-    QQuickStyle::setStyle("Material");
-    QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/hierarchylist.qml")));
-
-    return app.exec();
+    Label {
+        id: label
+        text: section
+        anchors.fill: parent
+        horizontalAlignment: Qt.AlignHCenter
+        verticalAlignment: Qt.AlignVCenter
+    }
 }

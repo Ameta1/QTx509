@@ -48,42 +48,65 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQuickStyle>
-#include <QLibrary>
+#ifndef HIERARCHYMODEL_H
+#define HIERARCHYMODEL_H
 
-extern "C"
+#include <QAbstractListModel>
+#include "midlayer.h"
+
+class HierarchyModel : public QAbstractListModel
 {
-   #include<gost-engine.h>
-}
+    Q_OBJECT
 
-#include "hierarchymodel.h"
-#include <openssl/obj_mac.h>
-#include <openssl/x509.h>
-#include <openssl/err.h>
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include "ssldefs.h"
-#include "sslfunctions.h"
+    Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
+public:
+    enum HierarchyRole {
+        CountryRole = Qt::DisplayRole,
+        ProvinceRole = Qt::UserRole,
+        CityRole,
+        OrgRole,
+        CommonRole,
+        rootPassRole,
+        cypherSuiteRole,
+        daysValidRole,
+        chainSuffixRole,
+        rootSuffixRole,
+        folderRole
+    };
+    Q_ENUM(HierarchyRole)
 
-int main(int argc, char *argv[])
-{
-    QGuiApplication app(argc, argv);
-    OSSL_LIB_CTX_load_config(NULL, "/home/gregory/diplom/contactlist/openssl.cnf");
-    ENGINE_load_gost();
-    qmlRegisterType<HierarchyModel>("Backend", 1, 0, "HierarchyModel");
+    HierarchyModel(QObject *parent = nullptr);
 
-    EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
-    EVP_PKEY *pkeyDP = pkey.get();
-    qDebug() <<"generateGOSTKey"<< sslFunctions::generateGOSTaKey(&pkeyDP);
-//    qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
-//    qDebug() << "createRootCert" << sslFunctions::createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", 3650);
+    int rowCount(const QModelIndex & = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    QHash<int, QByteArray> roleNames() const;
 
-    QQuickStyle::setStyle("Material");
-    QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/hierarchylist.qml")));
+    Q_INVOKABLE QVariantMap get() const;
+    QString folder();
+    void setFolder(QString folder);
+signals:
+    void folderChanged();
+public slots:
+    void set(const QString &szCountry,
+             const QString &szProvince,
+             const QString &szCity,
+             const QString &szOrganization,
+             const QString &szCommon,
+             const QString &rootCApass,
+             const QString &cypherSuite,
+             int daysValid,
+             const QString &caChainSuffix,
+             const QString &caRootSuffix,
+             const QString &folder
+             );
+    //change void to smth to handle errors
+    void save();
+    void load(QString file);
+    void createNew();
+    void createRootAndIntermediate();
+    QStringList cypherSuites();
+private:
+    Midlayer midlayer;
+};
 
-    return app.exec();
-}
+#endif // HIERARCHYMODEL_H

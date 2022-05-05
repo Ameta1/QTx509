@@ -1,0 +1,11 @@
+openssl_conf = openssl_def
+[openssl_def]
+engines = engine_section
+
+[engine_section]
+gost = gost_section
+
+[gost_section]
+engine_id = gost
+dynamic_path = /home/gregory/diplom/openssl/gost-engine/build/bin/libgost.so
+default_algorithms = ALL

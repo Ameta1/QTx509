@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 The Qt Company Ltd.
-** Hierarchy: https://www.qt.io/licensing/
+** Certificate: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -12,7 +12,7 @@
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
 ** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the hierarchy form at https://www.qt.io/hierarchy-us.
+** information use the certificate form at https://www.qt.io/certificate-us.
 **
 ** BSD License Usage
 ** Alternatively, you may use this file under the terms of the BSD license
@@ -48,42 +48,66 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQuickStyle>
-#include <QLibrary>
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls 
+import "./"
 
-extern "C"
-{
-   #include<gost-engine.h>
-}
+ItemDelegate {
+    id: delegate
 
-#include "hierarchymodel.h"
-#include <openssl/obj_mac.h>
-#include <openssl/x509.h>
-#include <openssl/err.h>
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include "ssldefs.h"
-#include "sslfunctions.h"
+    contentItem: ColumnLayout {
+        spacing: 10
 
-int main(int argc, char *argv[])
-{
-    QGuiApplication app(argc, argv);
-    OSSL_LIB_CTX_load_config(NULL, "/home/gregory/diplom/contactlist/openssl.cnf");
-    ENGINE_load_gost();
-    qmlRegisterType<HierarchyModel>("Backend", 1, 0, "HierarchyModel");
-
-    EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
-    EVP_PKEY *pkeyDP = pkey.get();
-    qDebug() <<"generateGOSTKey"<< sslFunctions::generateGOSTaKey(&pkeyDP);
-//    qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
-//    qDebug() << "createRootCert" << sslFunctions::createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", 3650);
-
-    QQuickStyle::setStyle("Material");
-    QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/hierarchylist.qml")));
-
-    return app.exec();
+        CustomTextField {
+            readOnly: true
+            text: szCountry
+            infoText: qsTr("Country code:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: szProvince
+            infoText: qsTr("Region code:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: szCity
+            infoText: qsTr("City:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: szOrganization
+            infoText: qsTr("Organization:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: szCommon
+            infoText: qsTr("Common:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: rootCApass
+            infoText: qsTr("Root CA Password:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: cypherSuite
+            infoText: qsTr("Cypher suite:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: daysValid
+            infoText: qsTr("Days valid:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: caChainSuffix
+            infoText: qsTr("CA chain suffix:")
+        }
+        CustomTextField {
+            readOnly: true
+            text: caRootSuffix
+            infoText: qsTr("CA root suffix:")
+        }
+    }
 }
