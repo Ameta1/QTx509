@@ -40,6 +40,7 @@ public:
     int generateRootCertificate();
     int generateIntermediateCertificate();
     int generateEndCertificate();
+    int newCertFromRoot();
 private:
     int generateKeys(bool isRootCert, QString identificator);
     QString privateKeysPath(QString identificator);

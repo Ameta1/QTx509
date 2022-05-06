@@ -3,16 +3,16 @@ TARGET = hierarchylist
 QT += quick quickcontrols2
 
 INCLUDEPATH += \
-$$PWD/../openssl/ \
+$$PWD/../openssl/include \
 $$PWD/../openssl/gost-engine/
 
 DEPENDPATH += \
-$$PWD/../openssl/ \
+$$PWD/../openssl/include \
 $$PWD/../openssl/gost-engine/
 
 LIBS += \
--L/home/gregory/diplom/openssl/ -lcrypto \
--L/home/gregory/diplom/openssl/gost-engine/build/bin -lgost \
+-L$$PWD/../openssl/ -lcrypto \
+-L$$PWD/../openssl/gost-engine/build/bin -lgost \
 
 HEADERS += \
     hierarchymodel.h \
