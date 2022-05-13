@@ -24,9 +24,7 @@ typedef struct  {
 namespace sslFunctions {
     int generateECKey(EVP_PKEY **pkey);
     int generateRSAKey(EVP_PKEY **pkey, int numberOfBits);
-    int generateGOSTaKey(EVP_PKEY **pkey);
-    int generateGOSTbKey(EVP_PKEY **pkey);
-    int generateGOSTcKey(EVP_PKEY **pkey);
+    int generateGOSTKey(EVP_PKEY **pkey, const char *paramset);
     int saveEVPPrivateKey(EVP_PKEY **pkey, QString path);
     int saveEVPPublicKey(EVP_PKEY **pkey, QString path);
     int generateCertReq(QString keyPath, QString reqPath, Sslinfo sslinfo);

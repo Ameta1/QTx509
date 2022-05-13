@@ -36,11 +36,9 @@ public:
                                     "gostr34102012_256a, GC256A, STRIBOG_256",
                                     "gostr34102012_256b, GC256B, STRIBOG_256",
                                     "gostr34102012_256c, GC256B, STRIBOG_256"};
-    //ПЕРЕДЕЛАТЬ ПОДПИСЬ ДЛЯ ГОСТА
     int generateRootCertificate();
     int generateIntermediateCertificate();
     int generateEndCertificate();
-    int newCertFromRoot();
 private:
     int generateKeys(bool isRootCert, QString identificator);
     QString privateKeysPath(QString identificator);

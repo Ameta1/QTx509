@@ -51,7 +51,7 @@
 import QtQuick
 import QtQuick.Controls
 import Qt.labs.platform 1.1 as Platform
-import QtQuick.Layouts 1.2
+
 ApplicationWindow {
     id: window
 
@@ -161,29 +161,20 @@ ApplicationWindow {
     Item {
         id: loadedView
         visible: false
-        anchors.fill: parent
-
         HierarchyView {
             id: hierarchyView
+            anchors.fill: parent
         }
+        Button{
+            id: rootAndInter
 
-        Row {
-            anchors.bottom: parent.bottom
-            Button{
-                id: rootAndInter
-
-                text: qsTr("Generate Root and Intermediate Certificates")
-                onClicked: {
-                    hierarchyView.model.createRootAndIntermediate()
-                    successPopup.open()
-                }
+            onClicked: {
+                hierarchyView.model.createRootAndIntermediate()
+                successPopup.open()
             }
         }
     }
     Popup {
-        height: 100
-        width: 200
-        anchors.centerIn: parent
         id: successPopup
         modal: true
         focus: true

@@ -2,10 +2,12 @@
 #define SSLDEFS_H
 
 #include <openssl/ssl.h>
+#include <openssl/engine.h>
 #include <memory>
 
 using EC_KEY_ptr = std::unique_ptr<EC_KEY, decltype(&::EC_KEY_free)>;
 
+using ENGINE_ptr = std::unique_ptr<ENGINE, decltype(&::ENGINE_free)>;
 using BIGNUM_ptr = std::unique_ptr<BIGNUM, decltype(&::BN_free)>;
 
 using RSA_ptr = std::unique_ptr<RSA, decltype(&::RSA_free)>;

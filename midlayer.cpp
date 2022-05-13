@@ -53,12 +53,21 @@ int Midlayer::generateKeys(bool isRootCert, QString identificator)
             break;
         }
         case GOSTasuite: {
+            if (sslFunctions::generateGOSTKey(&pkeyDP, "A")) {
+                return Fail;
+            }
             break;
         }
         case GOSTbsuite: {
+            if (sslFunctions::generateGOSTKey(&pkeyDP, "B")) {
+                return Fail;
+            }
             break;
         }
         case GOSTcsuite: {
+            if (sslFunctions::generateGOSTKey(&pkeyDP, "C")) {
+                return Fail;
+            }
             break;
         }
         default: {
@@ -115,11 +124,5 @@ Sslinfo Midlayer::packSslinfo()
     sslinfo.szOrganization = (unsigned char *)strdup(hierarchyInfo.szOrganization.toLocal8Bit().constData());
     sslinfo.szCommon = (unsigned char *)strdup(hierarchyInfo.szCommon.toLocal8Bit().constData());
     sslinfo.rootCAPass = (unsigned char *)strdup(hierarchyInfo.rootCApass.toLocal8Bit().constData());
-//    memcpy(sslinfo.szCountry, hierarchyInfo.szCountry.toStdString().c_str() ,hierarchyInfo.szCountry.size());
-//    memcpy(sslinfo.szProvince, hierarchyInfo.szProvince.toStdString().c_str() ,hierarchyInfo.szProvince.size());
-//    memcpy(sslinfo.szCity, hierarchyInfo.szCity.toStdString().c_str() ,hierarchyInfo.szCity.size());
-//    memcpy(sslinfo.szOrganization, hierarchyInfo.szOrganization.toStdString().c_str() ,hierarchyInfo.szOrganization.size());
-//    memcpy(sslinfo.szCommon, hierarchyInfo.szCommon.toStdString().c_str() ,hierarchyInfo.szCommon.size());
-//    memcpy(sslinfo.rootCAPass, hierarchyInfo.rootCApass.toStdString().c_str() ,hierarchyInfo.rootCApass.size());
     return sslinfo;
 }

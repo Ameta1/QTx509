@@ -82,10 +82,9 @@ namespace sslFunctions {
 //        if (EVP_PKEY_keygen(ctx, &newkey) <= 0)
 
 //              goto err;
-    int generateGOSTaKey(EVP_PKEY **pkey)
+    int generateGOSTKey(EVP_PKEY **pkey, const char *paramset)
     {
         if (EVP_PKEY_set_type(*pkey, NID_id_GostR3410_2012_256) <= 0) {
-            qDebug() << EVP_PKEY_set_type(*pkey, NID_id_GostR3410_2012_256);
             return Fail;
         }
 
@@ -98,31 +97,18 @@ namespace sslFunctions {
 
         ret = EVP_PKEY_keygen_init(ctx.get());
         if (ret != 1) {
-            qDebug() << ret;
             return Fail;
         }
-        ret = EVP_PKEY_CTX_ctrl_str(ctx.get(), "paramset", "A");
+        ret = EVP_PKEY_CTX_ctrl_str(ctx.get(), "paramset", paramset);
         if (ret <= 0) {
-            qDebug() << ret;
             return Fail;
         }
         ret = EVP_PKEY_keygen(ctx.get(), pkey);
         if (ret != 1) {
-            qDebug() << ret;
             return Fail;
         }
         return OK;
     }
-
-    //int Sslmodel::generateGOSTbKey(EVP_PKEY **pkey)
-    //{
-
-    //}
-
-    //int Sslmodel::generateGOSTcKey(EVP_PKEY **pkey)
-    //{
-
-    //}
 
     //    int ret = PEM_write_bio_PKCS8PrivateKey(file, pkey,
     //                                                EVP_aes_256_cbc(),
@@ -130,7 +116,7 @@ namespace sslFunctions {
     //                                                passphrase.size(), NULL, NULL);
     int saveEVPPrivateKey(EVP_PKEY **pkey, QString path)
     {
-        FILE_ptr file (fopen(path.toLocal8Bit(), "a"), ::fclose);
+        FILE_ptr file (fopen(path.toLocal8Bit(), "a+"), ::fclose);
         if(!PEM_write_PKCS8PrivateKey(file.get(), *pkey, nullptr, nullptr, 0, nullptr, nullptr)) {
             qDebug() << "Handle me!!!";
             return Fail;
@@ -140,7 +126,7 @@ namespace sslFunctions {
 
     int saveEVPPublicKey(EVP_PKEY **pkey, QString path)
     {
-        FILE_ptr file (fopen(path.toLocal8Bit(), "a"), ::fclose);
+        FILE_ptr file (fopen(path.toLocal8Bit(), "a+"), ::fclose);
         if(!PEM_write_PUBKEY(file.get(), *pkey)) {
             qDebug() << "Handle me!!!";
             return Fail;
