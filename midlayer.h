@@ -2,6 +2,7 @@
 #define MIDLAYER_H
 
 #include <QObject>
+#include <QMap>
 #include "sslfunctions.h"
 typedef struct {
     QString szCountry; //"RU"
@@ -35,10 +36,11 @@ public:
                                     "rsa, 4096, sha256",
                                     "gostr34102012_256a, GC256A, STRIBOG_256",
                                     "gostr34102012_256b, GC256B, STRIBOG_256",
-                                    "gostr34102012_256c, GC256B, STRIBOG_256"};
+                                    "gostr34102012_256c, GC256C, STRIBOG_256"};
     int generateRootCertificate();
     int generateIntermediateCertificate();
     int generateEndCertificate();
+    QMap<QString, QString> settingsList;
 private:
     int generateKeys(bool isRootCert, QString identificator);
     QString privateKeysPath(QString identificator);

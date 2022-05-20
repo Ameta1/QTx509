@@ -7,18 +7,18 @@
 #include <openssl/evp.h>
 
 //OSSL_LIB_CTX_load_config
-//./Configure --debug no-autoload-config no-gost
+//./Configure --debug no-autoload-config no-gost no-tests
 
 #define x509version 3
 #define rsabits 4096
 
 typedef struct  {
-    const unsigned char		*szCountry;
-    const unsigned char		*szProvince;
-    const unsigned char		*szCity;
-    const unsigned char		*szOrganization;
-    const unsigned char		*szCommon;
-    const unsigned char     *rootCAPass;
+    QString szCountry;
+    QString szProvince;
+    QString szCity;
+    QString szOrganization;
+    QString szCommon;
+    QString rootCAPass;
 } Sslinfo;
 
 namespace sslFunctions {
@@ -31,9 +31,8 @@ namespace sslFunctions {
     int createIntermediateX509Cert(QString privateKeyPath, QString publicKeyPath, QString certPath, int daysValid, Sslinfo sslinfo);
     int createRootX509Cert(QString keyPath, QString certPath, int daysValid, Sslinfo sslinfo);
     int signCertReq(QString reqPath);
-    bool isValidKeys(QString keyPath);
-    bool isValidCertReq(QString reqPath);
     int addInfo(X509_NAME *x509Name, Sslinfo sslinfo);
+    void showError();
 };
 
 #endif // SSLFUNCTIONS_H

@@ -59,41 +59,32 @@
 HierarchyModel::HierarchyModel(QObject *parent ) : QAbstractListModel(parent)
 {
     midlayer.hierarchyInfo = { };
+
+    midlayer.settingsList.insert("Country","");
+    midlayer.settingsList.insert("Province", "");
+    midlayer.settingsList.insert("City", "");
+    midlayer.settingsList.insert("Organization", "");
+    midlayer.settingsList.insert("Common", "");
+    midlayer.settingsList.insert("Root CA password", "");
+    midlayer.settingsList.insert("Cypher Suite", "");
+    midlayer.settingsList.insert("Days valid", "");
+    midlayer.settingsList.insert("Root CA suffix", "");
+    midlayer.settingsList.insert("Chain CA suffix", "");
+    midlayer.settingsList.insert("Intermediate CA password", "");
+    midlayer.settingsList.insert("Intermediate CA suffix", "");
 }
 
 int HierarchyModel::rowCount(const QModelIndex &) const
 {
-    return 1;
+    return midlayer.settingsList.size();
 }
-enum HierarchyRole {
-    CountryRole = Qt::DisplayRole,
-    ProvinceRole,
-    CityRole,
-    OrgRole,
-    CommonRole,
-    rootPassRole,
-    cypherSuiteRole,
-    daysValidRole,
-    chainSuffixRole,
-    rootSuffixRole,
-    folderRole
-};
 
 QVariant HierarchyModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < rowCount())
         switch (role) {
-        case CountryRole: return midlayer.hierarchyInfo.szCountry;
-        case ProvinceRole: return midlayer.hierarchyInfo.szProvince;
-        case CityRole: return midlayer.hierarchyInfo.szCity;
-        case OrgRole: return midlayer.hierarchyInfo.szOrganization;
-        case CommonRole: return midlayer.hierarchyInfo.szCommon;
-        case rootPassRole: return midlayer.hierarchyInfo.rootCApass;
-        case cypherSuiteRole: return midlayer.hierarchyInfo.cypherSuite;
-        case daysValidRole: return midlayer.hierarchyInfo.daysValid;
-        case chainSuffixRole: return midlayer.hierarchyInfo.caChainSuffix;
-        case rootSuffixRole: return midlayer.hierarchyInfo.caRootSuffix;
-        case folderRole: return midlayer.hierarchyInfo.folder;
+        case NameRole: return midlayer.settingsList.key();
+        case SettingRole: return midlayer.settingsList.at(index.row()).second;
         default: return QVariant();
     }
     return QVariant();
@@ -102,33 +93,17 @@ QVariant HierarchyModel::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> HierarchyModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles {
-        { CountryRole, "szCountry" },
-        { ProvinceRole, "szProvince" },
-        { CityRole, "szCity" },
-        { OrgRole, "szOrganization" },
-        { CommonRole, "szCommon" },
-        { rootPassRole, "rootCApass" },
-        { cypherSuiteRole, "cypherSuite" },
-        { daysValidRole, "daysValid" },
-        { chainSuffixRole, "caChainSuffix" },
-        { rootSuffixRole, "caRootSuffix" },
+        { NameRole, "Name" },
+        { SettingRole, "Setting" }
     };
     return roles;
 }
 
-QVariantMap HierarchyModel::get() const
+QVariantMap HierarchyModel::get(int row) const
 {
-    return {{"szCountry", midlayer.hierarchyInfo.szCountry},
-            {"szProvince", midlayer.hierarchyInfo.szProvince},
-            {"szCity", midlayer.hierarchyInfo.szCity},
-            {"szOrganization", midlayer.hierarchyInfo.szOrganization},
-            {"szCommon", midlayer.hierarchyInfo.szCommon},
-            {"rootPass", midlayer.hierarchyInfo.rootCApass},
-            {"cypherSuite", midlayer.hierarchyInfo.cypherSuite},
-            {"daysValid", midlayer.hierarchyInfo.daysValid},
-            {"chainSuffix", midlayer.hierarchyInfo.caChainSuffix},
-            {"rootSuffix", midlayer.hierarchyInfo.caRootSuffix},
-    };
+    QPair<QString, QString> setting = midlayer.settingsList.;
+    return {{"Name", setting.first},
+            {"Setting", setting.second}};
 }
 
 QString HierarchyModel::folder()
@@ -142,64 +117,29 @@ void HierarchyModel::setFolder(QString folder)
     emit folderChanged();
 }
 
-void HierarchyModel::set(const QString &szCountry,
-                       const QString &szProvince,
-                       const QString &szCity,
-                       const QString &szOrganization,
-                       const QString &szCommon,
-                       const QString &rootCApass,
-                       const QString &cypherSuite,
-                       int daysValid,
-                       const QString &caChainSuffix,
-                       const QString &caRootSuffix,
-                       const QString &folder)
+void HierarchyModel::set(int row, const QString &name, const QString &setting)
 {
-    midlayer.hierarchyInfo = HierarchyInfo{
-            szCountry,
-            szProvince,
-            szCity,
-            szOrganization,
-            szCommon,
-            rootCApass,
-            cypherSuite,
-            daysValid,
-            caChainSuffix,
-            caRootSuffix,
-            folder};
-    emit dataChanged(index(0, 0), index(0, 0), {CountryRole,
-                                                ProvinceRole,
-                                                CityRole,
-                                                OrgRole,
-                                                CommonRole,
-                                                rootPassRole,
-                                                cypherSuiteRole,
-                                                daysValidRole,
-                                                chainSuffixRole,
-                                                rootSuffixRole,
-                                                folderRole});
+    if (row < 0 || row >= midlayer.settingsList.count())
+        return;
+
+    midlayer.settingsList.replace(row, {name, setting});
+    emit dataChanged(index(row, 0), index(row, 0), {NameRole, SettingRole});
 }
-
-
 
 void HierarchyModel::save()
 {
     QJsonObject settings;
-    settings.insert("szCountry", midlayer.hierarchyInfo.szCountry);
-    settings.insert("szProvince", midlayer.hierarchyInfo.szProvince);
-    settings.insert("szCity", midlayer.hierarchyInfo.szCity);
-    settings.insert("szOrganization", midlayer.hierarchyInfo.szOrganization);
-    settings.insert("szCommon", midlayer.hierarchyInfo.szCommon);
-    settings.insert("rootPass", midlayer.hierarchyInfo.rootCApass);
-    settings.insert("cypherSuite", midlayer.hierarchyInfo.cypherSuite);
-    settings.insert("daysValid", midlayer.hierarchyInfo.daysValid);
-    settings.insert("chainSuffix", midlayer.hierarchyInfo.caChainSuffix);
-    settings.insert("rootSuffix", midlayer.hierarchyInfo.caRootSuffix);
+    for (int index = 0; index < midlayer.settingsList.size(); index++) {
+        settings.insert(midlayer.settingsList.at(index).first,
+                        midlayer.settingsList.at(index).second);
+    }
 
     QJsonDocument doc(settings);
 
-    QString hierarchyPath(QUrl(midlayer.hierarchyInfo.folder).toLocalFile() + "/" + "openssl_root_ca_config.json");
+    QString hierarchyPath = midlayer.hierarchyInfo.folder + "/" + "openssl_root_ca_config.json";
     QFile configFile(hierarchyPath);
     if (!configFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        //ALARM
              return;
     configFile.write(doc.toJson());
     configFile.close();
@@ -208,25 +148,21 @@ void HierarchyModel::save()
 
 void HierarchyModel::createNew()
 {
-    QString localfilepath(QUrl(midlayer.hierarchyInfo.folder).toLocalFile());
-    QDir().mkpath(localfilepath);
-    QDir().mkdir(localfilepath);
+    QDir().mkpath(midlayer.hierarchyInfo.folder);
+    QDir().mkdir(midlayer.hierarchyInfo.folder);
+
     this->save();
-    QDir().mkdir(localfilepath + "/public/");
-    QDir().mkdir(localfilepath + "/private/");
-    QDir().mkdir(localfilepath + "/certs/");
-    QDir().mkdir(localfilepath + "/csr/");
+
+    QDir().mkdir(midlayer.hierarchyInfo.folder + "/public/");
+    QDir().mkdir(midlayer.hierarchyInfo.folder + "/private/");
+    QDir().mkdir(midlayer.hierarchyInfo.folder + "/certs/");
+    QDir().mkdir(midlayer.hierarchyInfo.folder + "/csr/");
 }
 
 void HierarchyModel::createRootAndIntermediate()
 {
     midlayer.generateRootCertificate();
     midlayer.generateEndCertificate();
-}
-
-QStringList HierarchyModel::cypherSuites()
-{
-    return midlayer.cypherSuitesList;
 }
 
 void HierarchyModel::load(QString file)
@@ -245,17 +181,9 @@ void HierarchyModel::load(QString file)
     QJsonObject settings = doc.object();
 
     beginResetModel();
-    midlayer.hierarchyInfo.szCountry = settings.value("szCountry").toString();
-    midlayer.hierarchyInfo.szProvince = settings.value("szProvince").toString();
-    midlayer.hierarchyInfo.szCity = settings.value("szCity").toString();
-    midlayer.hierarchyInfo.szOrganization = settings.value("szOrganization").toString();
-    midlayer.hierarchyInfo.szCommon = settings.value("szCommon").toString();
-    midlayer.hierarchyInfo.rootCApass = settings.value("rootPass").toString();
-    midlayer.hierarchyInfo.cypherSuite = settings.value("cypherSuite").toString();
-    midlayer.hierarchyInfo.daysValid = settings.value("daysValid").toInt();
-    midlayer.hierarchyInfo.caChainSuffix = settings.value("chainSuffix").toString();
-    midlayer.hierarchyInfo.caRootSuffix = settings.value("rootSuffix").toString();
-    midlayer.hierarchyInfo.folder = QFileInfo(QUrl(file).toLocalFile()).absolutePath();;
-    qDebug() <<midlayer.hierarchyInfo.folder;
+    for (QString key : settings.keys())  {
+        midlayer.settingsList.append(QPair<QString,QString>(key, settings.value(key).toString()));
+    }
+    midlayer.hierarchyInfo.folder = QFileInfo(QUrl(file).toLocalFile()).absolutePath();
     endResetModel();
 }

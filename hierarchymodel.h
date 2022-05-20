@@ -60,20 +60,11 @@ class HierarchyModel : public QAbstractListModel
 
     Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
 public:
-    enum HierarchyRole {
-        CountryRole = Qt::DisplayRole,
-        ProvinceRole = Qt::UserRole,
-        CityRole,
-        OrgRole,
-        CommonRole,
-        rootPassRole,
-        cypherSuiteRole,
-        daysValidRole,
-        chainSuffixRole,
-        rootSuffixRole,
-        folderRole
+
+    enum SettingsRole {
+        NameRole = Qt::DisplayRole,
+        SettingRole
     };
-    Q_ENUM(HierarchyRole)
 
     HierarchyModel(QObject *parent = nullptr);
 
@@ -81,30 +72,18 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QHash<int, QByteArray> roleNames() const;
 
-    Q_INVOKABLE QVariantMap get() const;
+    Q_INVOKABLE QVariantMap get(int row) const;
     QString folder();
     void setFolder(QString folder);
 signals:
     void folderChanged();
 public slots:
-    void set(const QString &szCountry,
-             const QString &szProvince,
-             const QString &szCity,
-             const QString &szOrganization,
-             const QString &szCommon,
-             const QString &rootCApass,
-             const QString &cypherSuite,
-             int daysValid,
-             const QString &caChainSuffix,
-             const QString &caRootSuffix,
-             const QString &folder
-             );
     //change void to smth to handle errors
+    void set(int row, const QString &name, const QString &setting);
     void save();
     void load(QString file);
     void createNew();
     void createRootAndIntermediate();
-    QStringList cypherSuites();
 private:
     Midlayer midlayer;
 };

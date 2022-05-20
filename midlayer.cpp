@@ -14,7 +14,7 @@ int Midlayer::generateRootCertificate()
     }
     if (sslFunctions::createRootX509Cert(this->privateKeysPath("Root"),
                                          this->rootCertPath(),
-                                         hierarchyInfo.daysValid,
+                                         settingsList.value("Days valid"),
                                          this->packSslinfo())) {
         return Fail;
     }
@@ -118,11 +118,11 @@ QString Midlayer::csrPath()
 Sslinfo Midlayer::packSslinfo()
 {
     Sslinfo sslinfo;
-    sslinfo.szCountry = (unsigned char *)strdup(hierarchyInfo.szCountry.toLocal8Bit().constData());
-    sslinfo.szProvince = (unsigned char *)strdup(hierarchyInfo.szProvince.toLocal8Bit().constData());
-    sslinfo.szCity = (unsigned char *)strdup(hierarchyInfo.szCity.toLocal8Bit().constData());
-    sslinfo.szOrganization = (unsigned char *)strdup(hierarchyInfo.szOrganization.toLocal8Bit().constData());
-    sslinfo.szCommon = (unsigned char *)strdup(hierarchyInfo.szCommon.toLocal8Bit().constData());
-    sslinfo.rootCAPass = (unsigned char *)strdup(hierarchyInfo.rootCApass.toLocal8Bit().constData());
+    sslinfo.szCountry = hierarchyInfo.szCountry;
+    sslinfo.szProvince = hierarchyInfo.szProvince;
+    sslinfo.szCity = hierarchyInfo.szCity;
+    sslinfo.szOrganization = hierarchyInfo.szOrganization;
+    sslinfo.szCommon = hierarchyInfo.szCommon;
+    sslinfo.rootCAPass = hierarchyInfo.rootCApass;
     return sslinfo;
 }

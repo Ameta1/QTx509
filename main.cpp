@@ -69,6 +69,23 @@ extern "C"
 #include "ssldefs.h"
 #include "sslfunctions.h"
 
+void debug() {
+    Sslinfo sslinfo {
+        "RU",
+        "77",
+        "zelenograd",
+        "miet",
+        "localhost",
+        "1234"
+    };
+    EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
+    EVP_PKEY *pkeyDP = pkey.get();
+    qDebug() <<"generateGOSTKey"<< sslFunctions::generateGOSTKey(&pkeyDP, "A");
+    qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPPrivateKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
+    qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPPublicKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
+    qDebug() << "createRootCert" << sslFunctions::createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", 3650, sslinfo);
+};
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -83,11 +100,8 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<HierarchyModel>("Backend", 1, 0, "HierarchyModel");
 
-//    EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
-//    EVP_PKEY *pkeyDP = pkey.get();
-//    qDebug() <<"generateGOSTKey"<< sslFunctions::generateGOSTKey(&pkeyDP, "A");
-//    qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
-//    qDebug() << "createRootCert" << sslFunctions::createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", 3650);
+    //debug();
+
 
     QQuickStyle::setStyle("Material");
     QQmlApplicationEngine qmlEngine;
@@ -95,3 +109,4 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
+

@@ -11,8 +11,8 @@ $$PWD/../openssl/ \
 $$PWD/../openssl/gost-engine/
 
 LIBS += \
--L/home/gregory/diplom/openssl/ -lcrypto \
--L/home/gregory/diplom/openssl/gost-engine/build/bin -lgost \
+-L$$PWD/../openssl/ -lcrypto \
+-L$$PWD/../openssl/gost-engine/build/bin -lgost \
 
 HEADERS += \
     hierarchymodel.h \
@@ -33,3 +33,5 @@ RESOURCES += \
     HierarchyForm.qml \
     SectionDelegate.ui.qml \
     hierarchylist.qml
+
+DISTFILES +=

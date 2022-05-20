@@ -55,9 +55,6 @@ import Backend
 ListView {
     id: listView
 
-    width: 600
-    height: 600
-
     boundsBehavior: Flickable.StopAtBounds
 
     delegate: HierarchyDelegate {

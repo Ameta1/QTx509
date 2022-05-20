@@ -61,7 +61,6 @@ ApplicationWindow {
     title: qsTr("Hierarchy List")
 
     header: Row{
-
         Button {
             id: loadButton
             text: qsTr("Load hierarchy from file")
@@ -126,62 +125,37 @@ ApplicationWindow {
         }
     }
 
-//    HierarchyDialog {
-//        id:
-//        onFinished: {
-//            hierarchyView.model.set(szCountry,
-//                                  szProvince,
-//                                  szCity,
-//                                  szOrganization,
-//                                  szCommon,
-//                                  rootPass,
-//                                  cypherSuite,
-//                                  daysValid,
-//                                  chainSuffix,
-//                                  rootSuffix)
-//            hierarchyView.model.createNew(folder)
-//            hierarchyView.visible = true
-//        }
-//    }
-//    function editHierarchy(hierarchy) {
-//        form.szCountry.text = hierarchy.szCountry;
-//        form.szProvince.text = hierarchy.szProvince;
-//        form.szCity.text = hierarchy.szCity;
-//        form.szOrganization.text = hierarchy.szOrganization;
-//        form.szCommon.text = hierarchy.szCommon;
-//        form.rootPass.text = hierarchy.rootPass;
-//        form.cypherSuite.text = hierarchy.cypherSuite;
-//        form.daysValid.text = hierarchy.daysValid;
-//        form.chainSuffix.text = hierarchy.chainSuffix;
-//        form.rootSuffix.text = hierarchy.rootSuffix;
-
-//        dialog.title = qsTr("Edit Hierarchy");
-//        dialog.open();
-//    }
     Item {
         id: loadedView
         visible: false
         HierarchyView {
             id: hierarchyView
             anchors.fill: parent
-        }
-        Button{
-            id: rootAndInter
+            footer: Row {
+                Button {
+                    id: rootAndInter
 
-            onClicked: {
-                hierarchyView.model.createRootAndIntermediate()
-                successPopup.open()
+                    text: qsTr("Generate root and intermediate certificates")
+                    onClicked: {
+                        hierarchyView.model.createRootAndIntermediate()
+                    }
+                }
             }
         }
     }
+
     Popup {
         id: successPopup
+        anchors.centerIn: window.center
+        width: window.width/2
+        height: window.height/2
         modal: true
         focus: true
 
         contentItem: Text {
             id: popupText
-            text: qsTr("Certificate successfully created")
+            text: qsTr("Success!")
         }
     }
+
 }

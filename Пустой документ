@@ -1,0 +1,13 @@
+BUILD_PATH=$(pwd)
+CORES_COM=$(nproc)
+
+cd openssl
+./Configure no-autoload-config no-gost no-tests
+make
+
+cd gost-engine
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DOPENSSL_ROOT_DIR="$BUILD_PATH"/openssl/ ..
+cmake --build . --config Release
