@@ -144,20 +144,20 @@ namespace sslFunctions {
         return OK;
     }
 
-    int generateCertReq(QString keyPath, QString reqPath, Sslinfo sslinfo) {
+    int generateCertReq(QString keyFile, QString reqFile, Sslinfo sslinfo) {
         int ret = 1;
 
-        FILE_ptr keyFile (fopen(keyPath.toLocal8Bit(), "r"), ::fclose);
-        if (keyFile.get() == NULL) {
+        FILE_ptr keyFileptr (fopen(keyFile.toLocal8Bit(), "r"), ::fclose);
+        if (keyFileptr.get() == NULL) {
             showError();
             return Fail;
         }
-        EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(keyFile.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
+        EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(keyFileptr.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
         if (privateKey.get() == NULL) {
             showError();
             return Fail;
         }
-        EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(keyFile.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
+        EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(keyFileptr.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
         if (publicKey.get() == NULL) {
             showError();
             return Fail;
@@ -185,7 +185,7 @@ namespace sslFunctions {
             return Fail;
         }
 
-        FILE_ptr certFile (fopen(reqPath.toLocal8Bit(), "w"), ::fclose);
+        FILE_ptr certFile (fopen(reqFile.toLocal8Bit(), "w"), ::fclose);
         if (certFile.get() == NULL) {
             showError();
             return Fail;
@@ -198,20 +198,20 @@ namespace sslFunctions {
         return OK;
     }
 
-    int createRootX509Cert(QString keyPath, QString certPath, int daysValid, Sslinfo sslinfo) {
+    int createRootX509Cert(QString keyFile, QString certFile, Sslinfo sslinfo) {
         int ret = 1;
 
-        FILE_ptr keyFile (fopen(keyPath.toLocal8Bit(), "r"), ::fclose);
-        if (keyFile.get() == NULL) {
+        FILE_ptr keyFileptr (fopen(keyFile.toLocal8Bit(), "r"), ::fclose);
+        if (keyFileptr.get() == NULL) {
             showError();
             return Fail;
         }
-        EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(keyFile.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
+        EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(keyFileptr.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
         if (privateKey.get() == NULL) {
             showError();
             return Fail;
         }
-        EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(keyFile.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
+        EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(keyFileptr.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
         if (publicKey.get() == NULL) {
             showError();
             return Fail;
@@ -246,7 +246,7 @@ namespace sslFunctions {
         }
 
         X509_gmtime_adj(X509_get_notBefore(cert.get()), 0);
-        X509_gmtime_adj(X509_get_notAfter(cert.get()), daysValid * 24 * 3600);
+        X509_gmtime_adj(X509_get_notAfter(cert.get()), sslinfo.daysValid * 24 * 3600);
 
         if (EVP_PKEY_get_id(privateKey.get()) == NID_id_GostR3410_2012_256) {
             ret = X509_sign(cert.get(), privateKey.get(), EVP_get_digestbynid(NID_id_GostR3410_2012_256));
@@ -264,13 +264,13 @@ namespace sslFunctions {
             return Fail;
         }
 
-        FILE_ptr certFile (fopen(certPath.toLocal8Bit(), "w"), ::fclose);
-        if (certFile.get() == NULL) {
+        FILE_ptr certFileptr (fopen(certFile.toLocal8Bit(), "w"), ::fclose);
+        if (certFileptr.get() == NULL) {
             showError();
             return Fail;
         }
 
-        ret = PEM_write_X509(certFile.get(), cert.get());
+        ret = PEM_write_X509(certFileptr.get(), cert.get());
         if (ret == 0) {
             showError();
             return Fail;
@@ -279,8 +279,8 @@ namespace sslFunctions {
         return OK;
     }
 
-    int createIntermediateX509Cert(QString privateKeyPath, QString publicKeyPath, QString certPath, int daysValid, Sslinfo sslinfo) {
-        FILE_ptr privateFile (fopen(privateKeyPath.toLocal8Bit(), "r"), ::fclose);
+    int createIntermediateX509Cert(QString privatekeyFile, QString publickeyFile, QString certFile, Sslinfo sslinfo) {
+        FILE_ptr privateFile (fopen(privatekeyFile.toLocal8Bit(), "r"), ::fclose);
         if (privateFile.get() == NULL) {
             showError();
             return Fail;
@@ -290,7 +290,7 @@ namespace sslFunctions {
             showError();
             return Fail;
         }
-        FILE_ptr publicFile (fopen(publicKeyPath.toLocal8Bit(), "r"), ::fclose);
+        FILE_ptr publicFile (fopen(publickeyFile.toLocal8Bit(), "r"), ::fclose);
         if (privateFile.get() == NULL) {
             showError();
             return Fail;
@@ -328,7 +328,7 @@ namespace sslFunctions {
         }
 
         X509_gmtime_adj(X509_get_notBefore(cert.get()), 0);
-        X509_gmtime_adj(X509_get_notAfter(cert.get()), daysValid * 24 * 3600);
+        X509_gmtime_adj(X509_get_notAfter(cert.get()), sslinfo.daysValid * 24 * 3600);
 
         if (EVP_PKEY_get_id(privateKey.get()) == NID_id_GostR3410_2012_256) {
             ret = X509_sign(cert.get(), privateKey.get(), EVP_get_digestbynid(NID_id_GostR3410_2012_256));
@@ -347,13 +347,102 @@ namespace sslFunctions {
             return Fail;
         }
 
-        FILE_ptr certFile (fopen(certPath.toLocal8Bit(), "w"), ::fclose);
-        if (certFile.get() == NULL) {
+        FILE_ptr certFileptr (fopen(certFile.toLocal8Bit(), "w"), ::fclose);
+        if (certFileptr.get() == NULL) {
             showError();
             return Fail;
         }
 
-        ret = PEM_write_X509(certFile.get(), cert.get());
+        ret = PEM_write_X509(certFileptr.get(), cert.get());
+        if (ret == 0) {
+            showError();
+            return Fail;
+        }
+
+        return OK;
+    }
+
+    int createLeafX509Cert(QString privatekeyFile, QString publickeyFile, QString ancestorKeyfile, QString certFile, Sslinfo sslinfo)
+    {
+        FILE_ptr privateFile (fopen(privatekeyFile.toLocal8Bit(), "r"), ::fclose);
+        if (privateFile.get() == NULL) {
+            showError();
+            return Fail;
+        }
+        EVP_PKEY_ptr privateKey (PEM_read_PrivateKey(privateFile.get(),NULL, NULL, NULL), ::EVP_PKEY_free);
+        if (privateKey.get() == NULL) {
+            showError();
+            return Fail;
+        }
+        FILE_ptr publicFile (fopen(publickeyFile.toLocal8Bit(), "r"), ::fclose);
+        if (privateFile.get() == NULL) {
+            showError();
+            return Fail;
+        }
+        EVP_PKEY_ptr publicKey (PEM_read_PUBKEY(publicFile.get(), NULL, NULL, NULL), ::EVP_PKEY_free);
+        if (publicKey.get() == NULL) {
+            showError();
+            return Fail;
+        }
+        FILE_ptr ancestorFile (fopen(ancestorKeyfile.toLocal8Bit(), "r"), ::fclose);
+        if (ancestorFile.get() == NULL) {
+            showError();
+            return Fail;
+        }
+        EVP_PKEY_ptr ancestorKey (PEM_read_PUBKEY(ancestorFile.get(), NULL, NULL, NULL), ::EVP_PKEY_free); //for verification
+        if (publicKey.get() == NULL) {
+            showError();
+            return Fail;
+        }
+
+        X509_ptr cert (X509_new(), ::X509_free);
+
+        int ret = X509_set_version(cert.get(), x509version);
+        if (ret != 1) {
+            showError();
+            return Fail;
+        }
+
+        ret = X509_set_pubkey(cert.get(), publicKey.get());
+        if (ret != 1) {
+            showError();
+            return Fail;
+        }
+
+        X509_NAME *x509Name = X509_get_subject_name(cert.get()); // no need to free, will be freed as part of x509Req
+        ret = addInfo(x509Name, sslinfo);
+        if (ret != 0) {
+            showError();
+            return Fail;
+        }
+
+        X509_gmtime_adj(X509_get_notBefore(cert.get()), 0);
+        X509_gmtime_adj(X509_get_notAfter(cert.get()), sslinfo.daysValid * 24 * 3600);
+
+        if (EVP_PKEY_get_id(privateKey.get()) == NID_id_GostR3410_2012_256) {
+            ret = X509_sign(cert.get(), privateKey.get(), EVP_get_digestbynid(NID_id_GostR3410_2012_256));
+        }
+        else {
+            ret = X509_sign(cert.get(), privateKey.get(), EVP_sha256());
+        }
+        if (ret == 0) {
+            showError();
+            return Fail;
+        }
+
+        ret = X509_verify(cert.get(), ancestorKey.get());
+        if (ret != 1) {
+            showError();
+            return Fail;
+        }
+
+        FILE_ptr certFileptr (fopen(certFile.toLocal8Bit(), "w"), ::fclose);
+        if (certFileptr.get() == NULL) {
+            showError();
+            return Fail;
+        }
+
+        ret = PEM_write_X509(certFileptr.get(), cert.get());
         if (ret == 0) {
             showError();
             return Fail;
@@ -369,5 +458,6 @@ namespace sslFunctions {
         ERR_error_string_n(err, buf, sizeof(buf));
         qDebug() << buf;
     }
+
 }
 

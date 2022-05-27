@@ -2,21 +2,9 @@
 #define MIDLAYER_H
 
 #include <QObject>
-#include <QMap>
+
 #include "sslfunctions.h"
-typedef struct {
-    QString szCountry; //"RU"
-    QString szProvince; //"77"
-    QString szCity; //"Zelenograd"
-    QString szOrganization; //"MIET"
-    QString szCommon; //"localhost"
-    QString rootCApass; //1234
-    QString cypherSuite;
-    int daysValid; //3650
-    QString caChainSuffix;
-    QString caRootSuffix;
-    QString folder;
-} HierarchyInfo;
+#include "settingsmap.h"
 
 enum cypherSuites {
     ECDSAsuite,
@@ -29,25 +17,43 @@ enum cypherSuites {
 class Midlayer : public QObject
 {
     Q_OBJECT
+
 public:
     explicit Midlayer(QObject *parent = nullptr);
-    HierarchyInfo hierarchyInfo;
     const QStringList cypherSuitesList = {"ecdsa, prime256v1, sha256",
                                     "rsa, 4096, sha256",
                                     "gostr34102012_256a, GC256A, STRIBOG_256",
                                     "gostr34102012_256b, GC256B, STRIBOG_256",
                                     "gostr34102012_256c, GC256C, STRIBOG_256"};
     int generateRootCertificate();
-    int generateIntermediateCertificate();
-    int generateEndCertificate();
-    QMap<QString, QString> settingsList;
+    int generateIntermediateCertificate(QString identificator);
+    int generateLeafCertificate(QString identificator, QString ancestoCertFile);
+    QString rootCertFilename();
+
+    QString folder;
+
+    QString country;
+    QString province;
+    QString city;
+    QString organization;
+    QString common;
+
+    QString rootCApassword;
+    QString cypherSuite;
+    QString daysValid;
+    QString rootCAsuffix;
+    QString chainCASuffix;
+
+    bool threelevels;
+    QString intermediateCAPassword;
+    QString intermediateCASuffix;
 private:
     int generateKeys(bool isRootCert, QString identificator);
-    QString privateKeysPath(QString identificator);
-    QString publicKeysPath(QString identificator);
-    QString rootCertPath();
-    QString chainCertPath();
-    QString csrPath();
+    QString intermediateCertFilename(QString identificator);
+    QString privateKeyFilename(QString identificator);
+    QString publicKeyFilename(QString identificator);
+    QString chainCertFilename();
+    QString csrFilename();
     Sslinfo packSslinfo();
 };
 

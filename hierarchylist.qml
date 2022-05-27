@@ -51,7 +51,9 @@
 import QtQuick
 import QtQuick.Controls
 import Qt.labs.platform 1.1 as Platform
-
+import QtQuick.Layouts 1.2
+import Custom.HierarchyModel 1.0
+import Custom.CertificateModel 1.0
 ApplicationWindow {
     id: window
 
@@ -60,8 +62,9 @@ ApplicationWindow {
     visible: true
     title: qsTr("Hierarchy List")
 
-    header: Row{
+    header: RowLayout {
         Button {
+            Layout.fillWidth: true
             id: loadButton
             text: qsTr("Load hierarchy from file")
             onClicked: {
@@ -69,7 +72,8 @@ ApplicationWindow {
             }
         }
 
-        Button{
+        Button {
+            Layout.fillWidth: true
             id: saveButton
             text: qsTr("Make a new hierarchy")
             onClicked: {
@@ -84,7 +88,7 @@ ApplicationWindow {
         folder: Platform.StandardPaths.standardLocations(Platform.StandardPaths.HomeLocation)[0]
         nameFilters: ["Text files (*.json)"]
         onAccepted: {
-            hierarchyView.model.load(file)
+            HierarchyModel.load(file)
             loadedView.visible = true
         }
     }
@@ -105,39 +109,224 @@ ApplicationWindow {
 
         contentItem: HierarchyForm {
             id: form
-            cypherSuite.model: hierarchyView.model.cypherSuites()
         }
 
         onAccepted: {
-            hierarchyView.model.set(form.szCountry.text,
-                                    form.szProvince.text,
-                                    form.szCity.text,
-                                    form.szOrganization.text,
-                                    form.szCommon.text,
-                                    form.rootPass.text,
-                                    form.cypherSuite.currentText,
-                                    form.daysValid.text,
-                                    form.chainSuffix.text,
-                                    form.rootSuffix.text,
-                                    form.folder.text)
-            hierarchyView.model.createNew()
+            form.accepted()
+            HierarchyModel.createNew()
             loadedView.visible = true
         }
     }
 
-    Item {
+    Column {
         id: loadedView
         visible: false
+        padding: 10
+        width: window.width - padding*2
         HierarchyView {
             id: hierarchyView
-            anchors.fill: parent
-            footer: Row {
-                Button {
-                    id: rootAndInter
+        }
+        onVisibleChanged: {
+            rootAndInter.enabled = !HierarchyModel.rootCreated()
+            root.enabled = !HierarchyModel.rootCreated()
+            ancestorCertModel.reload(HierarchyModel.folder, "*.intermediate.*")
+            exportCertModel.reload(HierarchyModel.folder, "*.*")
+            certCombobox.currentIndex = 0
 
-                    text: qsTr("Generate root and intermediate certificates")
+        }
+        ColumnLayout {
+            id: threeLevelColumn
+            spacing: 0
+            width: parent.width
+            Button {
+                id: rootAndInter
+
+                visible: HierarchyModel.threelevels
+                Layout.fillWidth: true
+                width: window.width
+                text: qsTr("Generate root and intermediate certificates")
+                onClicked: {
+                    HierarchyModel.createRootAndIntermediate()
+                    successPopup.open()
+                    rootAndInter.enabled = false
+                }
+            }
+            Button {
+                id: newIntermediate
+
+                visible: HierarchyModel.threelevels
+                Layout.fillWidth: true
+                text: qsTr("Generate new intermediate certificate")
+                onClicked: {
+                    intermediateDialog.open()
+                }
+            }
+            Button {
+                id: newLeaf
+
+                visible: HierarchyModel.threelevels
+                Layout.fillWidth: true
+                text: qsTr("Generate new leaf certificate")
+                onClicked: {
+                    leafDialog.open()
+                }
+            }
+            Button {
+                 id: root
+
+                 visible: !HierarchyModel.threelevels
+                 Layout.fillWidth: true
+                 text: qsTr("Generate root certificate")
+                 onClicked: {
+                     HierarchyModel.createRoot()
+                }
+            }
+            Button {
+                 id: end
+
+                 visible: !HierarchyModel.threelevels
+                 Layout.fillWidth: true
+                 text: qsTr("Generate end certificate")
+                 onClicked: {
+                     intermediateDialog.prefix = ""
+                     intermediateDialog.open()
+                }
+            }
+            Button {
+                 id: exportToCard
+
+                 Layout.fillWidth: true
+                 text: qsTr("Export to smart card")
+                 onClicked: {
+                     exportDialog.open()
+                 }
+            }
+        }
+    }
+
+    Dialog {
+        id: intermediateDialog
+
+        anchors.centerIn: parent
+
+        standardButtons: Dialog.Save | Dialog.Cancel
+
+        contentItem: Column {
+            Text {
+                id: prompt
+                text: qsTr("Please enter new identifier for this certificate")
+            }
+            SettingTextField {
+                id: identifierTextField
+                infoText: qsTr("New identifier")
+            }
+            Text {
+                id: result
+                text: qsTr("End file name: ") + identifierTextField.text + ".cert.pem"
+            }
+        }
+        onAccepted: {
+            HierarchyModel.createAdditionalIntermediate(identifierTextField.text)
+            successPopup.open()
+        }
+    }
+    Platform.FileDialog {
+        id: certDialog
+        options: Platform.FileDialog.ReadOnly
+        fileMode: Platform.FileDialog.OpenFile
+        folder: HierarchyModel.folder + "/" + "certs"
+        nameFilters: ["Text files (*.crt)"]
+        onAccepted: {
+            HierarchyModel.load(file)
+            loadedView.visible = true
+        }
+    }
+
+    Dialog {
+        id: leafDialog
+
+        anchors.centerIn: parent
+
+        standardButtons: Dialog.Save | Dialog.Cancel
+
+        contentItem: ColumnLayout {
+            Label {
+                id: certComboboxLabel
+
+                text: qsTr("Parent certificate")
+            }
+
+            ComboBox {
+                id: certCombobox
+                textRole: "CertString"
+                Layout.fillWidth: true
+                model: CertificateModel {
+                    id: ancestorCertModel
+                }
+            }
+
+            Text {
+                id: leafPrompt
+
+                Layout.fillWidth: true
+                text: qsTr("Please enter new identifier for this certificate")
+            }
+            SettingTextField {
+                id: leafIdentifierTextField
+
+                Layout.fillWidth: true
+                infoText: qsTr("New identifier")
+            }
+            Text {
+                id: leafResult
+
+                Layout.fillWidth: true
+                text: qsTr("End file name: ") + leafIdentifierTextField.text + ".cert.pem"
+            }
+        }
+
+        onAccepted: {
+            HierarchyModel.createLeaf(leafIdentifierTextField.text, certCombobox.currentValue)
+            successPopup.open()
+        }
+    }
+
+    Dialog {
+        id: exportDialog
+
+        anchors.centerIn: parent
+
+        width: parent.width/2
+
+        standardButtons: Dialog.Save | Dialog.Cancel
+
+        contentItem: ColumnLayout {
+            Label {
+                id: exportLabel
+
+                text: qsTr("Choose certificates to export:")
+            }
+
+            ListView {
+                id: exportListView
+
+                height: 200
+                boundsBehavior: Flickable.StopAtBounds
+                Layout.fillWidth: true
+                model: CertificateModel {
+                    id: exportCertModel
+                }
+                delegate: CheckDelegate {
+                    width: exportListView.width
+                    text: CertString
+                    checked: ForExport
                     onClicked: {
-                        hierarchyView.model.createRootAndIntermediate()
+                        if (checkState === Qt.Checked) {
+                            exportCertModel.checkForExport(index)
+                        }
+                        else {
+                             exportCertModel.uncheckForExport(index)
+                        }
                     }
                 }
             }
@@ -146,7 +335,8 @@ ApplicationWindow {
 
     Popup {
         id: successPopup
-        anchors.centerIn: window.center
+        x: Math.round((parent.width - width) / 2)
+        y: Math.round((parent.height - height) / 2)
         width: window.width/2
         height: window.height/2
         modal: true
@@ -154,8 +344,8 @@ ApplicationWindow {
 
         contentItem: Text {
             id: popupText
+            font.pointSize: 30
             text: qsTr("Success!")
         }
     }
-
 }

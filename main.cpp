@@ -50,8 +50,8 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QQuickStyle>
-#include <QLibrary>
 
 extern "C"
 {
@@ -68,6 +68,7 @@ extern "C"
 #include <openssl/engine.h>
 #include "ssldefs.h"
 #include "sslfunctions.h"
+#include "certificatemodel.h"
 
 void debug() {
     Sslinfo sslinfo {
@@ -76,14 +77,14 @@ void debug() {
         "zelenograd",
         "miet",
         "localhost",
-        "1234"
+        3650
     };
     EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
     EVP_PKEY *pkeyDP = pkey.get();
     qDebug() <<"generateGOSTKey"<< sslFunctions::generateGOSTKey(&pkeyDP, "A");
     qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPPrivateKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
     qDebug() <<"saveEVPKey"<< sslFunctions::saveEVPPublicKey(&pkeyDP, "/home/gregory/MY_COOL_KEY.pem");
-    qDebug() << "createRootCert" << sslFunctions::createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", 3650, sslinfo);
+    qDebug() << "createRootCert" << sslFunctions::createRootX509Cert("/home/gregory/MY_COOL_KEY.pem", "/home/gregory/MY_COOL_CERT.crt", sslinfo);
 };
 
 int main(int argc, char *argv[])
@@ -98,14 +99,13 @@ int main(int argc, char *argv[])
     }
     ENGINE_set_default(engine.get(), ENGINE_METHOD_ALL);
 
-    qmlRegisterType<HierarchyModel>("Backend", 1, 0, "HierarchyModel");
-
-    //debug();
-
-
     QQuickStyle::setStyle("Material");
-    QQmlApplicationEngine qmlEngine;
-    qmlEngine.load(QUrl(QStringLiteral("qrc:/hierarchylist.qml")));
+    qmlRegisterType<certificateModel>("Custom.CertificateModel", 1, 0, "CertificateModel");
+    QScopedPointer<HierarchyModel> hierarchyModel(new HierarchyModel);
+    QQmlApplicationEngine qmlApplicationEngine;
+    qmlRegisterSingletonInstance("Custom.HierarchyModel", 1, 0, "HierarchyModel", hierarchyModel.get());
+//    qmlEngine.rootContext()->setContextProperty("hierarchyModel", hierarchyModel);
+    qmlApplicationEngine.load(QUrl(QStringLiteral("qrc:/hierarchylist.qml")));
 
     return app.exec();
 }

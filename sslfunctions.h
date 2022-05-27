@@ -18,7 +18,7 @@ typedef struct  {
     QString szCity;
     QString szOrganization;
     QString szCommon;
-    QString rootCAPass;
+    int daysValid;
 } Sslinfo;
 
 namespace sslFunctions {
@@ -27,9 +27,10 @@ namespace sslFunctions {
     int generateGOSTKey(EVP_PKEY **pkey, const char *paramset);
     int saveEVPPrivateKey(EVP_PKEY **pkey, QString path);
     int saveEVPPublicKey(EVP_PKEY **pkey, QString path);
-    int generateCertReq(QString keyPath, QString reqPath, Sslinfo sslinfo);
-    int createIntermediateX509Cert(QString privateKeyPath, QString publicKeyPath, QString certPath, int daysValid, Sslinfo sslinfo);
-    int createRootX509Cert(QString keyPath, QString certPath, int daysValid, Sslinfo sslinfo);
+    int generateCertReq(QString keyFile, QString reqFile, Sslinfo sslinfo);
+    int createRootX509Cert(QString keyFile, QString certFile, Sslinfo sslinfo);
+    int createIntermediateX509Cert(QString privatekeyFile, QString publickeyFile, QString certFile, Sslinfo sslinfo);
+    int createLeafX509Cert(QString privatekeyFile, QString publickeyFile, QString ancestorKeyfile, QString certFile, Sslinfo sslinfo);
     int signCertReq(QString reqPath);
     int addInfo(X509_NAME *x509Name, Sslinfo sslinfo);
     void showError();

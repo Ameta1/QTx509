@@ -4,7 +4,6 @@
 Midlayer::Midlayer(QObject *parent)
     : QObject{parent}
 {
-
 }
 
 int Midlayer::generateRootCertificate()
@@ -12,24 +11,40 @@ int Midlayer::generateRootCertificate()
     if (generateKeys(true, "Root")) {
         return Fail;
     }
-    if (sslFunctions::createRootX509Cert(this->privateKeysPath("Root"),
-                                         this->rootCertPath(),
-                                         settingsList.value("Days valid"),
+    if (sslFunctions::createRootX509Cert(this->privateKeyFilename("Root"),
+                                         this->rootCertFilename(),
                                          this->packSslinfo())) {
         return Fail;
     }
     return OK;
 }
-int Midlayer::generateEndCertificate()
+
+int Midlayer::generateIntermediateCertificate(QString identificator)
 {
-    if (generateKeys(false, "End")) {
+    if (generateKeys(false, identificator)) {
         return Fail;
     }
-    if (sslFunctions::createIntermediateX509Cert(this->privateKeysPath("Root"),
-                                                 this->publicKeysPath("End"),
-                                                 this->chainCertPath(),
-                                                 hierarchyInfo.daysValid,
+    if (sslFunctions::createIntermediateX509Cert(this->privateKeyFilename("Root"),
+                                                 this->publicKeyFilename(identificator),
+                                                 this->intermediateCertFilename(identificator),
                                                  this->packSslinfo())) {
+        return Fail;
+    }
+    return OK;
+}
+
+int Midlayer::generateLeafCertificate(QString identificator, QString ancestoCertFile)
+{
+    if (generateKeys(false, identificator)) {
+        return Fail;
+    }
+    ancestoCertFile.chop(QString(".cert.pem").size());
+    QString ancestorKeyFile = ancestoCertFile;
+    if (sslFunctions::createLeafX509Cert(this->privateKeyFilename(ancestorKeyFile),
+                                         this->publicKeyFilename(identificator),
+                                         this->publicKeyFilename(ancestorKeyFile),
+                                         this->intermediateCertFilename(identificator),
+                                         this->packSslinfo())) {
         return Fail;
     }
     return OK;
@@ -39,7 +54,7 @@ int Midlayer::generateKeys(bool isRootCert, QString identificator)
 {
     EVP_PKEY_ptr pkey (EVP_PKEY_new(), EVP_PKEY_free);
     EVP_PKEY *pkeyDP = pkey.get();
-    switch (cypherSuitesList.indexOf(hierarchyInfo.cypherSuite)) {
+    switch (cypherSuitesList.indexOf(cypherSuite)) {
         case ECDSAsuite: {
             if (sslFunctions::generateECKey(&pkeyDP)) {
                 return Fail;
@@ -74,55 +89,60 @@ int Midlayer::generateKeys(bool isRootCert, QString identificator)
             return Fail;
         }
     }
-    if (sslFunctions::saveEVPPrivateKey(&pkeyDP, this->privateKeysPath(identificator))) {
+    if (sslFunctions::saveEVPPrivateKey(&pkeyDP, this->privateKeyFilename(identificator))) {
         return Fail;
     }
     if (isRootCert) {
-        if (sslFunctions::saveEVPPublicKey(&pkeyDP, this->privateKeysPath(identificator))) {
+        if (sslFunctions::saveEVPPublicKey(&pkeyDP, this->privateKeyFilename(identificator))) {
             return Fail;
         }
     }
     else {
-        if (sslFunctions::saveEVPPublicKey(&pkeyDP, this->publicKeysPath(identificator))) {
+        if (sslFunctions::saveEVPPublicKey(&pkeyDP, this->publicKeyFilename(identificator))) {
             return Fail;
         }
     }
     return OK;
 }
 
-QString Midlayer::privateKeysPath(QString identificator)
+QString Midlayer::privateKeyFilename(QString identificator)
 {
-    return hierarchyInfo.folder + "/private/" + hierarchyInfo.szOrganization + identificator +".key.pem";
+    return folder + "/private/"  + identificator +".key.pem";
 }
 
-QString Midlayer::publicKeysPath(QString identificator)
+QString Midlayer::publicKeyFilename(QString identificator)
 {
-    return hierarchyInfo.folder + "/public/" + hierarchyInfo.szOrganization + identificator + ".key.pem";
+    return folder + "/public/" + identificator + ".key.pem";
 }
 
-QString Midlayer::rootCertPath()
+QString Midlayer::rootCertFilename()
 {
-    return hierarchyInfo.folder + "/certs/" + hierarchyInfo.caRootSuffix + ".cert.pem";
+    return folder + "/certs/" + rootCAsuffix + ".cert.pem";
 }
 
-QString Midlayer::chainCertPath()
+QString Midlayer::intermediateCertFilename(QString identificator)
 {
-    return hierarchyInfo.folder + "/certs/" + hierarchyInfo.caChainSuffix + ".cert.pem";
+    return folder + "/certs/" + identificator + ".cert.pem";
 }
 
-QString Midlayer::csrPath()
+QString Midlayer::chainCertFilename()
 {
-    return hierarchyInfo.folder + "/csr/" + hierarchyInfo.szOrganization + "csr.pem";
+    return folder + "/certs/" + chainCASuffix + ".cert.pem";
+}
+
+QString Midlayer::csrFilename()
+{
+    return folder + "/csr/" + organization + "csr.pem";
 }
 
 Sslinfo Midlayer::packSslinfo()
 {
     Sslinfo sslinfo;
-    sslinfo.szCountry = hierarchyInfo.szCountry;
-    sslinfo.szProvince = hierarchyInfo.szProvince;
-    sslinfo.szCity = hierarchyInfo.szCity;
-    sslinfo.szOrganization = hierarchyInfo.szOrganization;
-    sslinfo.szCommon = hierarchyInfo.szCommon;
-    sslinfo.rootCAPass = hierarchyInfo.rootCApass;
+    sslinfo.szCountry = country;
+    sslinfo.szProvince = province ;
+    sslinfo.szCity = city;
+    sslinfo.szOrganization = organization;
+    sslinfo.szCommon = common;
+    sslinfo.daysValid = daysValid.toInt();
     return sslinfo;
 }

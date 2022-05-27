@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+<file alias="HierarchyView.qml">/home/gregory/qSshMaster/HierarchyView.qml</file>
+<file alias="HierarchyForm.qml">/home/gregory/qSshMaster/HierarchyForm.qml</file>
+<file alias="hierarchylist.qml">/home/gregory/qSshMaster/hierarchylist.qml</file>
+<file alias="IdentifierDialog.qml">/home/gregory/qSshMaster/IdentifierDialog.qml</file>
+<file alias="SettingTextField.qml">/home/gregory/qSshMaster/SettingTextField.qml</file>
+<file alias="Translation_en.ts">/home/gregory/qSshMaster/Translation_en.ts</file>
+</qresource>
+</RCC>

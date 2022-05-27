@@ -3,11 +3,11 @@ TARGET = hierarchylist
 QT += quick quickcontrols2
 
 INCLUDEPATH += \
-$$PWD/../openssl/ \
+$$PWD/../openssl/include \
 $$PWD/../openssl/gost-engine/
 
 DEPENDPATH += \
-$$PWD/../openssl/ \
+$$PWD/../openssl/include \
 $$PWD/../openssl/gost-engine/
 
 LIBS += \
@@ -15,23 +15,30 @@ LIBS += \
 -L$$PWD/../openssl/gost-engine/build/bin -lgost \
 
 HEADERS += \
+    certificatemodel.h \
     hierarchymodel.h \
     midlayer.h \
+    settingsmap.h \
     ssldefs.h \
     sslfunctions.h
 
 SOURCES += \
+    certificatemodel.cpp \
     main.cpp \
     hierarchymodel.cpp \
     midlayer.cpp \
+    settingsmap.cpp \
     sslfunctions.cpp
 
 RESOURCES += \
-    CustomTextField.qml \
-    HierarchyDelegate.qml \
     HierarchyView.qml \
     HierarchyForm.qml \
-    SectionDelegate.ui.qml \
-    hierarchylist.qml
+    hierarchylist.qml \
+    IdentifierDialog.qml \
+    SettingTextField.qml \
+    Translation_en.ts
 
-DISTFILES +=
+TRANSLATIONS = Translation_en.ts
+DISTFILES += \
+
+    SettingTextField.qml

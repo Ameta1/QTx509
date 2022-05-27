@@ -56,87 +56,44 @@
 #include "hierarchymodel.h"
 #include "sslfunctions.h"
 
-HierarchyModel::HierarchyModel(QObject *parent ) : QAbstractListModel(parent)
+HierarchyModel::HierarchyModel(QObject *parent ) : QObject(parent), midlayer()
 {
-    midlayer.hierarchyInfo = { };
-
-    midlayer.settingsList.insert("Country","");
-    midlayer.settingsList.insert("Province", "");
-    midlayer.settingsList.insert("City", "");
-    midlayer.settingsList.insert("Organization", "");
-    midlayer.settingsList.insert("Common", "");
-    midlayer.settingsList.insert("Root CA password", "");
-    midlayer.settingsList.insert("Cypher Suite", "");
-    midlayer.settingsList.insert("Days valid", "");
-    midlayer.settingsList.insert("Root CA suffix", "");
-    midlayer.settingsList.insert("Chain CA suffix", "");
-    midlayer.settingsList.insert("Intermediate CA password", "");
-    midlayer.settingsList.insert("Intermediate CA suffix", "");
-}
-
-int HierarchyModel::rowCount(const QModelIndex &) const
-{
-    return midlayer.settingsList.size();
-}
-
-QVariant HierarchyModel::data(const QModelIndex &index, int role) const
-{
-    if (index.row() < rowCount())
-        switch (role) {
-        case NameRole: return midlayer.settingsList.key();
-        case SettingRole: return midlayer.settingsList.at(index.row()).second;
-        default: return QVariant();
-    }
-    return QVariant();
-}
-
-QHash<int, QByteArray> HierarchyModel::roleNames() const
-{
-    static const QHash<int, QByteArray> roles {
-        { NameRole, "Name" },
-        { SettingRole, "Setting" }
-    };
-    return roles;
-}
-
-QVariantMap HierarchyModel::get(int row) const
-{
-    QPair<QString, QString> setting = midlayer.settingsList.;
-    return {{"Name", setting.first},
-            {"Setting", setting.second}};
-}
-
-QString HierarchyModel::folder()
-{
-    return midlayer.hierarchyInfo.folder;
-}
-
-void HierarchyModel::setFolder(QString folder)
-{
-    midlayer.hierarchyInfo.folder = folder;
-    emit folderChanged();
-}
-
-void HierarchyModel::set(int row, const QString &name, const QString &setting)
-{
-    if (row < 0 || row >= midlayer.settingsList.count())
-        return;
-
-    midlayer.settingsList.replace(row, {name, setting});
-    emit dataChanged(index(row, 0), index(row, 0), {NameRole, SettingRole});
+//    midlayer.country = "RU";
+//    midlayer.province = "77";
+//    midlayer.city = "Zelenograd";
+//    midlayer.organization = "Miet";
+//    midlayer.common = "TCS";
+//    midlayer.rootCApassword = "1234";
+//    midlayer.cypherSuite = midlayer.cypherSuitesList.first();
+//    midlayer.daysValid = "3650";
+//    midlayer.rootCAsuffix = "Miet.root.ca";
+//    midlayer.chainCASuffix = "Miet.chain.ca";
+//    midlayer.intermediateCAPassword = "1234";
+//    midlayer.intermediateCASuffix = "Miet.intermediate";
+//    midlayer.folder = QDir::homePath() + "/" + midlayer.organization;
 }
 
 void HierarchyModel::save()
 {
     QJsonObject settings;
-    for (int index = 0; index < midlayer.settingsList.size(); index++) {
-        settings.insert(midlayer.settingsList.at(index).first,
-                        midlayer.settingsList.at(index).second);
+    settings.insert("country", midlayer.country);
+    settings.insert("province", midlayer.province);
+    settings.insert("city", midlayer.city);
+    settings.insert("organization", midlayer.organization);
+    settings.insert("common", midlayer.common);
+    settings.insert("rootCApassword", midlayer.rootCApassword);
+    settings.insert("cypherSuite", midlayer.cypherSuite);
+    settings.insert("daysValid", midlayer.daysValid);
+    settings.insert("rootCAsuffix", midlayer.rootCAsuffix);
+    settings.insert("chainCASuffix", midlayer.chainCASuffix);
+    if (midlayer.threelevels) {
+        settings.insert("intermediateCAPassword", midlayer.intermediateCAPassword);
+        settings.insert("intermediateCASuffix", midlayer.intermediateCASuffix);
     }
 
     QJsonDocument doc(settings);
 
-    QString hierarchyPath = midlayer.hierarchyInfo.folder + "/" + "openssl_root_ca_config.json";
+    QString hierarchyPath = midlayer.folder + "/" + "openssl_root_ca_config.json";
     QFile configFile(hierarchyPath);
     if (!configFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
         //ALARM
@@ -145,24 +102,43 @@ void HierarchyModel::save()
     configFile.close();
 }
 
-
 void HierarchyModel::createNew()
 {
-    QDir().mkpath(midlayer.hierarchyInfo.folder);
-    QDir().mkdir(midlayer.hierarchyInfo.folder);
+    QDir().mkpath(midlayer.folder);
+    QDir().mkdir(midlayer.folder);
 
     this->save();
 
-    QDir().mkdir(midlayer.hierarchyInfo.folder + "/public/");
-    QDir().mkdir(midlayer.hierarchyInfo.folder + "/private/");
-    QDir().mkdir(midlayer.hierarchyInfo.folder + "/certs/");
-    QDir().mkdir(midlayer.hierarchyInfo.folder + "/csr/");
+    QDir().mkdir(midlayer.folder + "/public/");
+    QDir().mkdir(midlayer.folder + "/private/");
+    QDir().mkdir(midlayer.folder + "/certs/");
+    QDir().mkdir(midlayer.folder + "/csr/");
+}
+
+void HierarchyModel::createRoot()
+{
+    midlayer.generateRootCertificate();
 }
 
 void HierarchyModel::createRootAndIntermediate()
 {
     midlayer.generateRootCertificate();
-    midlayer.generateEndCertificate();
+    midlayer.generateIntermediateCertificate(midlayer.intermediateCASuffix);
+}
+
+void HierarchyModel::createAdditionalIntermediate(QString identificator)
+{
+    midlayer.generateIntermediateCertificate(identificator);
+}
+
+void HierarchyModel::createLeaf(QString identificator, QString ancestorFile)
+{
+    midlayer.generateLeafCertificate(identificator, ancestorFile);
+}
+
+bool HierarchyModel::rootCreated()
+{
+    return QFile(midlayer.rootCertFilename()).exists();
 }
 
 void HierarchyModel::load(QString file)
@@ -180,10 +156,219 @@ void HierarchyModel::load(QString file)
 
     QJsonObject settings = doc.object();
 
-    beginResetModel();
-    for (QString key : settings.keys())  {
-        midlayer.settingsList.append(QPair<QString,QString>(key, settings.value(key).toString()));
+    midlayer.country = settings.value("country").toString();
+    emit countryChanged();
+    midlayer.province = settings.value("province").toString();
+    emit provinceChanged();
+    midlayer.city = settings.value("city").toString();
+    emit cityChanged();
+    midlayer.organization = settings.value("organization").toString();
+    emit organizationChanged();
+    midlayer.common = settings.value("common").toString();
+    emit commonChanged();
+    midlayer.rootCApassword = settings.value("rootCApassword").toString();
+    emit rootCApasswordChanged();
+    midlayer.cypherSuite = settings.value("cypherSuite").toString();
+    emit cypherSuiteChanged();
+    midlayer.daysValid = settings.value("daysValid").toString();
+    emit daysValidChanged();
+    midlayer.rootCAsuffix = settings.value("rootCAsuffix").toString();
+    emit rootCAsuffixChanged();
+    midlayer.chainCASuffix = settings.value("chainCASuffix").toString();
+    emit chainCASuffixChanged();
+
+    if ((settings.value("intermediateCAPassword") != QJsonValue::Undefined) && (settings.value("intermediateCASuffix") != QJsonValue::Undefined)) {
+        midlayer.intermediateCAPassword = settings.value("intermediateCAPassword").toString();
+        emit intermediateCAPasswordChanged();
+        midlayer.intermediateCASuffix = settings.value("intermediateCASuffix").toString();
+        emit intermediateCASuffixChanged();
+        midlayer.threelevels = true;
+        emit threelevelsChanged();
     }
-    midlayer.hierarchyInfo.folder = QFileInfo(QUrl(file).toLocalFile()).absolutePath();
-    endResetModel();
+    else {
+        midlayer.threelevels = false;
+        emit threelevelsChanged();
+    }
+
+    midlayer.folder = QFileInfo(QUrl(file).toLocalFile()).absolutePath();
+}
+
+const QString &HierarchyModel::getFolder() const
+{
+    return midlayer.folder;
+}
+
+void HierarchyModel::setFolder(const QString &newFolder)
+{
+    midlayer.folder = QFileInfo(QUrl(newFolder).toLocalFile()).absolutePath();
+    emit folderChanged();
+}
+
+const QString &HierarchyModel::getCountry() const
+{
+    return midlayer.country;
+}
+
+void HierarchyModel::setCountry(const QString &newCountry)
+{
+    if (midlayer.country == newCountry)
+        return;
+    midlayer.country = newCountry;
+    emit countryChanged();
+}
+
+const QString &HierarchyModel::getProvince() const
+{
+    return midlayer.province;
+}
+
+void HierarchyModel::setProvince(const QString &newProvince)
+{
+    if (midlayer.province == newProvince)
+        return;
+    midlayer.province = newProvince;
+    emit provinceChanged();
+}
+
+const QString &HierarchyModel::getCity() const
+{
+    return midlayer.city;
+}
+
+void HierarchyModel::setCity(const QString &newCity)
+{
+    if (midlayer.city == newCity)
+        return;
+    midlayer.city = newCity;
+    emit cityChanged();
+}
+
+const QString &HierarchyModel::getOrganization() const
+{
+    return midlayer.organization;
+}
+
+void HierarchyModel::setOrganization(const QString &newOrganization)
+{
+    if (midlayer.organization == newOrganization)
+        return;
+    midlayer.organization = newOrganization;
+    emit organizationChanged();
+}
+
+const QString &HierarchyModel::getCommon() const
+{
+    return midlayer.common;
+}
+
+void HierarchyModel::setCommon(const QString &newCommon)
+{
+    if (midlayer.common == newCommon)
+        return;
+    midlayer.common = newCommon;
+    emit commonChanged();
+}
+
+const QString &HierarchyModel::getRootCApassword() const
+{
+    return midlayer.rootCApassword;
+}
+
+void HierarchyModel::setRootCApassword(const QString &newRootCApassword)
+{
+    if (midlayer.rootCApassword == newRootCApassword)
+        return;
+    midlayer.rootCApassword = newRootCApassword;
+    emit rootCApasswordChanged();
+}
+
+const QString &HierarchyModel::getCypherSuite() const
+{
+    return midlayer.cypherSuite;
+}
+
+void HierarchyModel::setCypherSuite(const QString &newCypherSuite)
+{
+    if (midlayer.cypherSuite == newCypherSuite)
+        return;
+    midlayer.cypherSuite = newCypherSuite;
+    emit cypherSuiteChanged();
+}
+
+const QString &HierarchyModel::getDaysValid() const
+{
+    return midlayer.daysValid;
+}
+
+void HierarchyModel::setDaysValid(const QString &newDaysValid)
+{
+    if (midlayer.daysValid == newDaysValid)
+        return;
+    midlayer.daysValid = newDaysValid;
+    emit daysValidChanged();
+}
+
+const QString &HierarchyModel::getRootCAsuffix() const
+{
+    return midlayer.rootCAsuffix;
+}
+
+void HierarchyModel::setRootCAsuffix(const QString &newRootCAsuffix)
+{
+    if (midlayer.rootCAsuffix == newRootCAsuffix)
+        return;
+    midlayer.rootCAsuffix = newRootCAsuffix;
+    emit rootCAsuffixChanged();
+}
+
+const QString &HierarchyModel::getChainCASuffix() const
+{
+    return midlayer.chainCASuffix;
+}
+
+void HierarchyModel::setChainCASuffix(const QString &newChainCASuffix)
+{
+    if (midlayer.chainCASuffix == newChainCASuffix)
+        return;
+    midlayer.chainCASuffix = newChainCASuffix;
+    emit chainCASuffixChanged();
+}
+
+bool HierarchyModel::getThreelevels() const
+{
+    return midlayer.threelevels;
+}
+
+void HierarchyModel::setThreelevels(bool newThreelevels)
+{
+    if (midlayer.threelevels == newThreelevels)
+        return;
+    midlayer.threelevels = newThreelevels;
+    emit threelevelsChanged();
+}
+
+const QString &HierarchyModel::getIntermediateCAPassword() const
+{
+    return midlayer.intermediateCAPassword;
+}
+
+void HierarchyModel::setIntermediateCAPassword(const QString &newIntermediateCAPassword)
+{
+    if (midlayer.intermediateCAPassword == newIntermediateCAPassword)
+        return;
+    midlayer.intermediateCAPassword = newIntermediateCAPassword;
+    emit intermediateCAPasswordChanged();
+}
+
+const QString &HierarchyModel::getIntermediateCASuffix() const
+{
+    return midlayer.intermediateCASuffix;
+}
+
+void HierarchyModel::setIntermediateCASuffix(const QString &newIntermediateCASuffix)
+{
+    if (midlayer.intermediateCASuffix == newIntermediateCASuffix)
+        return;
+    midlayer.intermediateCASuffix = newIntermediateCASuffix;
+    emit intermediateCASuffixChanged();
 }

@@ -54,36 +54,84 @@
 #include <QAbstractListModel>
 #include "midlayer.h"
 
-class HierarchyModel : public QAbstractListModel
+class HierarchyModel : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString folder READ getFolder WRITE setFolder NOTIFY folderChanged)
+    Q_PROPERTY(QString country READ getCountry WRITE setCountry NOTIFY countryChanged)
+    Q_PROPERTY(QString province READ getProvince WRITE setProvince NOTIFY provinceChanged)
+    Q_PROPERTY(QString city READ getCity WRITE setCity NOTIFY cityChanged)
+    Q_PROPERTY(QString organization READ getOrganization WRITE setOrganization NOTIFY organizationChanged)
+    Q_PROPERTY(QString common READ getCommon WRITE setCommon NOTIFY commonChanged)
+    Q_PROPERTY(QString rootCApassword READ getRootCApassword WRITE setRootCApassword NOTIFY rootCApasswordChanged)
+    Q_PROPERTY(QString cypherSuite READ getCypherSuite WRITE setCypherSuite NOTIFY cypherSuiteChanged)
+    Q_PROPERTY(QString daysValid READ getDaysValid WRITE setDaysValid NOTIFY daysValidChanged)
+    Q_PROPERTY(QString rootCAsuffix READ getRootCAsuffix WRITE setRootCAsuffix NOTIFY rootCAsuffixChanged)
+    Q_PROPERTY(QString chainCASuffix READ getChainCASuffix WRITE setChainCASuffix NOTIFY chainCASuffixChanged)
+    Q_PROPERTY(bool threelevels READ getThreelevels WRITE setThreelevels NOTIFY threelevelsChanged)
+    Q_PROPERTY(QString intermediateCAPassword READ getIntermediateCAPassword WRITE setIntermediateCAPassword NOTIFY intermediateCAPasswordChanged)
+    Q_PROPERTY(QString intermediateCASuffix READ getIntermediateCASuffix WRITE setIntermediateCASuffix NOTIFY intermediateCASuffixChanged)
 
-    Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
 public:
-
-    enum SettingsRole {
-        NameRole = Qt::DisplayRole,
-        SettingRole
-    };
-
     HierarchyModel(QObject *parent = nullptr);
 
-    int rowCount(const QModelIndex & = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    QHash<int, QByteArray> roleNames() const;
+    const QString &getFolder() const;
+    void setFolder(const QString &newFolder);
+    const QString &getCountry() const;
+    void setCountry(const QString &newCountry);
+    const QString &getProvince() const;
+    void setProvince(const QString &newProvince);
+    const QString &getCity() const;
+    void setCity(const QString &newCity);
+    const QString &getOrganization() const;
+    void setOrganization(const QString &newOrganization);
+    const QString &getCommon() const;
+    void setCommon(const QString &newCommon);
+    const QString &getRootCApassword() const;
+    void setRootCApassword(const QString &newRootCApassword);
+    const QString &getCypherSuite() const;
+    void setCypherSuite(const QString &newCypherSuite);
+    const QString &getDaysValid() const;
+    void setDaysValid(const QString &newDaysValid);
+    const QString &getRootCAsuffix() const;
+    void setRootCAsuffix(const QString &newRootCAsuffix);
+    const QString &getChainCASuffix() const;
+    void setChainCASuffix(const QString &newChainCASuffix);
+    bool getThreelevels() const;
+    void setThreelevels(bool newThreelevels);
+    const QString &getIntermediateCAPassword() const;
+    void setIntermediateCAPassword(const QString &newIntermediateCAPassword);
+    const QString &getIntermediateCASuffix() const;
+    void setIntermediateCASuffix(const QString &newIntermediateCASuffix);
 
-    Q_INVOKABLE QVariantMap get(int row) const;
-    QString folder();
-    void setFolder(QString folder);
-signals:
-    void folderChanged();
 public slots:
     //change void to smth to handle errors
-    void set(int row, const QString &name, const QString &setting);
     void save();
     void load(QString file);
     void createNew();
+    void createRoot();
     void createRootAndIntermediate();
+    void createAdditionalIntermediate(QString identificator);
+    void createLeaf(QString identificator, QString ancestorFile);
+    bool rootCreated();
+
+signals:
+    void countryChanged();
+    void provinceChanged();
+    void cityChanged();
+    void organizationChanged();
+    void commonChanged();
+    void rootCApasswordChanged();
+    void cypherSuiteChanged();
+    void daysValidChanged();
+    void rootCAsuffixChanged();
+    void chainCASuffixChanged();
+    void threelevelsChanged();
+    void intermediateCAPasswordChanged();
+    void intermediateCASuffixChanged();
+
+    void folderChanged();
+
 private:
     Midlayer midlayer;
 };
