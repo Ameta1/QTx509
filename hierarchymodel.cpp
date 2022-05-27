@@ -58,19 +58,7 @@
 
 HierarchyModel::HierarchyModel(QObject *parent ) : QObject(parent), midlayer()
 {
-//    midlayer.country = "RU";
-//    midlayer.province = "77";
-//    midlayer.city = "Zelenograd";
-//    midlayer.organization = "Miet";
-//    midlayer.common = "TCS";
-//    midlayer.rootCApassword = "1234";
-//    midlayer.cypherSuite = midlayer.cypherSuitesList.first();
-//    midlayer.daysValid = "3650";
-//    midlayer.rootCAsuffix = "Miet.root.ca";
-//    midlayer.chainCASuffix = "Miet.chain.ca";
-//    midlayer.intermediateCAPassword = "1234";
-//    midlayer.intermediateCASuffix = "Miet.intermediate";
-//    midlayer.folder = QDir::homePath() + "/" + midlayer.organization;
+    midlayer.threelevels = false;
 }
 
 void HierarchyModel::save()
@@ -177,7 +165,8 @@ void HierarchyModel::load(QString file)
     midlayer.chainCASuffix = settings.value("chainCASuffix").toString();
     emit chainCASuffixChanged();
 
-    if ((settings.value("intermediateCAPassword") != QJsonValue::Undefined) && (settings.value("intermediateCASuffix") != QJsonValue::Undefined)) {
+    if (!(settings.value("intermediateCAPassword").isUndefined()) &&
+            (!settings.value("intermediateCASuffix").isUndefined())) {
         midlayer.intermediateCAPassword = settings.value("intermediateCAPassword").toString();
         emit intermediateCAPasswordChanged();
         midlayer.intermediateCASuffix = settings.value("intermediateCASuffix").toString();

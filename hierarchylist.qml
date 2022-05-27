@@ -129,8 +129,11 @@ ApplicationWindow {
         onVisibleChanged: {
             rootAndInter.enabled = !HierarchyModel.rootCreated()
             root.enabled = !HierarchyModel.rootCreated()
+            newIntermediate.enabled = HierarchyModel.rootCreated()
+            newLeaf.enabled = HierarchyModel.rootCreated()
+            end.enabled = HierarchyModel.rootCreated()
             ancestorCertModel.reload(HierarchyModel.folder, "*.intermediate.*")
-            exportCertModel.reload(HierarchyModel.folder, "*.*")
+            exportCertModel.reload(HierarchyModel.folder, "*.pem")
             certCombobox.currentIndex = 0
 
         }
@@ -149,6 +152,8 @@ ApplicationWindow {
                     HierarchyModel.createRootAndIntermediate()
                     successPopup.open()
                     rootAndInter.enabled = false
+                    newIntermediate.enabled = true
+                    newLeaf.enabled = true
                 }
             }
             Button {
@@ -179,6 +184,8 @@ ApplicationWindow {
                  text: qsTr("Generate root certificate")
                  onClicked: {
                      HierarchyModel.createRoot()
+                     end.enabled = true
+                     root.enabled = false
                 }
             }
             Button {
@@ -188,7 +195,6 @@ ApplicationWindow {
                  Layout.fillWidth: true
                  text: qsTr("Generate end certificate")
                  onClicked: {
-                     intermediateDialog.prefix = ""
                      intermediateDialog.open()
                 }
             }
