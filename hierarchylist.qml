@@ -337,6 +337,9 @@ ApplicationWindow {
                 }
             }
         }
+        onAccepted: {
+            exportCertModel.exportToSmartCard()
+        }
     }
 
     Popup {

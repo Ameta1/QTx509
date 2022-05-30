@@ -2,6 +2,7 @@
 #define CERTIFICATEMODEL_H
 
 #include <QAbstractListModel>
+#include "pkcs11/Common.h"
 
 class certificateModel : public QAbstractListModel
 {
@@ -15,7 +16,6 @@ public:
     Q_ENUM(CertificateRole)
     explicit certificateModel(QObject *parent = nullptr);
 
-    // Basic functionality:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -27,8 +27,10 @@ public slots:
 
     void checkForExport(const int index);
     void uncheckForExport(const int index);
+
+    int exportToSmartCard();
 private:
-    QList<QPair<QString, bool>> certificateList;
+    QList<QVariantMap> certificateList;
 };
 
 #endif // CERTIFICATEMODEL_H

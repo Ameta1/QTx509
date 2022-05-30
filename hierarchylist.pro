@@ -4,15 +4,19 @@ QT += quick quickcontrols2
 
 INCLUDEPATH += \
 $$PWD/../openssl/include \
-$$PWD/../openssl/gost-engine/
+$$PWD/../openssl/gost-engine/ \
+$$PWD/pkcs11/
 
 DEPENDPATH += \
 $$PWD/../openssl/include \
-$$PWD/../openssl/gost-engine/
+$$PWD/../openssl/gost-engine/ \
+$$PWD/pkcs11/
 
 LIBS += \
 -L$$PWD/../openssl/ -lcrypto \
 -L$$PWD/../openssl/gost-engine/build/bin -lgost \
+-L$$PWD -lrtpkcs11ecp \
+-ldl
 
 HEADERS += \
     certificatemodel.h \
@@ -39,6 +43,3 @@ RESOURCES += \
     Translation_en.ts
 
 TRANSLATIONS = Translation_en.ts
-DISTFILES += \
-
-    SettingTextField.qml
