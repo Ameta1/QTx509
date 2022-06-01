@@ -16,6 +16,7 @@ LIBS += \
 -L$$PWD/../openssl/ -lcrypto \
 -L$$PWD/../openssl/gost-engine/build/bin -lgost \
 -L$$PWD -lrtpkcs11ecp \
+-L$$PWD -lpki-core \
 -ldl
 
 HEADERS += \

@@ -63,9 +63,14 @@ ApplicationWindow {
     title: qsTr("Hierarchy List")
 
     header: RowLayout {
+        id: headerRow
         Button {
-            Layout.fillWidth: true
             id: loadButton
+
+            Layout.leftMargin: 10
+            Layout.fillWidth: true
+            implicitWidth: 0
+
             text: qsTr("Load hierarchy from file")
             onClicked: {
                 fileDialog.open()
@@ -73,7 +78,10 @@ ApplicationWindow {
         }
 
         Button {
+            Layout.rightMargin: 10
             Layout.fillWidth: true
+            implicitWidth: 0
+
             id: saveButton
             text: qsTr("Make a new hierarchy")
             onClicked: {
@@ -125,6 +133,7 @@ ApplicationWindow {
         width: window.width - padding*2
         HierarchyView {
             id: hierarchyView
+            width: parent.width
         }
         onVisibleChanged: {
             rootAndInter.enabled = !HierarchyModel.rootCreated()
@@ -206,6 +215,15 @@ ApplicationWindow {
                  onClicked: {
                      exportDialog.open()
                  }
+            }
+            Button {
+                id: deleteAll
+
+                Layout.fillWidth: true
+                text: qsTr("Delete all certificates on smart card")
+                onClicked: {
+                    deleteDialog.open()
+                }
             }
         }
     }
@@ -339,6 +357,24 @@ ApplicationWindow {
         }
         onAccepted: {
             exportCertModel.exportToSmartCard()
+        }
+    }
+
+    Dialog {
+        id: deleteDialog
+
+        anchors.centerIn: parent
+
+        width: parent.width/2
+
+        standardButtons: Dialog.Save | Dialog.Cancel
+
+        contentItem: Text {
+            id: sure
+            text: qsTr("Are you sure?")
+        }
+        onAccepted: {
+            exportCertModel.deleteAllCertsOnSC()
         }
     }
 

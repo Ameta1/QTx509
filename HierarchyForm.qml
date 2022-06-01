@@ -12,9 +12,11 @@ import "./"
 ScrollView {
     id: scrollView
     signal accepted()
+
     ColumnLayout {
         id: editColumn
         spacing: 10
+        width: window.width
         SettingTextField {
             id: folder
             text: folderDialog.folder + "/" + organization.text + "/"
@@ -89,7 +91,9 @@ ScrollView {
                     "gostr34102012_256a, GC256A, STRIBOG_256",
                     "gostr34102012_256b, GC256B, STRIBOG_256",
                     "gostr34102012_256c, GC256C, STRIBOG_256"]
-            implicitWidth: 700
+            Layout.fillWidth: true
+            Layout.leftMargin: 5
+            Layout.rightMargin: 50
             Connections {
                 target: scrollView
                 function onAccepted(){ HierarchyModel.cypherSuite = cypherSuite.currentValue}
@@ -126,14 +130,17 @@ ScrollView {
         Label {
             text: qsTr("Hierarchy levels")
         }
-        Row {
+        RowLayout {
             Label {
+                Layout.alignment: Qt.AlignHCenter
                 text: "2"
-                font.pointSize: 15
+                font.pointSize: 18
                 visible: !stageSelector.checked
             }
             Switch {
                 id: stageSelector
+
+                Layout.alignment: Qt.AlignHCenter
                 checked: false
                 onClicked: {
                     HierarchyModel.threelevels = stageSelector.checked
@@ -142,8 +149,9 @@ ScrollView {
                 }
             }
             Label {
+                Layout.alignment: Qt.AlignHCenter
                 text: "3"
-                font.pointSize: 15
+                font.pointSize: 18
                 visible: stageSelector.checked
             }
         }

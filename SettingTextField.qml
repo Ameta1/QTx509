@@ -8,8 +8,9 @@ TextField {
     selectByMouse: true
 
     placeholderText: qsTr("Enter value")
-    background: Item {
-        id: background
+
+    background: Rectangle {
+        radius: 3
     }
 
     width: parent.width

@@ -2,7 +2,6 @@
 #define CERTIFICATEMODEL_H
 
 #include <QAbstractListModel>
-#include "pkcs11/Common.h"
 
 class certificateModel : public QAbstractListModel
 {
@@ -29,6 +28,7 @@ public slots:
     void uncheckForExport(const int index);
 
     int exportToSmartCard();
+    int deleteAllCertsOnSC();
 private:
     QList<QVariantMap> certificateList;
 };
