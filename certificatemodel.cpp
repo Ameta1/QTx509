@@ -1,8 +1,9 @@
-#include "certificatemodel.h"
 #include <QDir>
 #include <iostream>
-#include "pkcs11/common.h"
 #include "openssl/x509.h"
+#include "certificatemodel.h"
+#include "rutokenUtils.h"
+
 
 CertificateModel::CertificateModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -63,7 +64,7 @@ void CertificateModel::uncheckForExport(const int index)
     certificateList[index]["ForExport"] = false;
 }
 
-int CertificateModel::exportToSmartCard()
+int CertificateModel::exportToRutoken(QString pin)
 {
     try {
             rutoken::pkicore::initialize(std::string("/usr/lib/")); //NOTE IN BUILDING PROCESS!!
@@ -78,7 +79,7 @@ int CertificateModel::exportToSmartCard()
 
             auto device = std::move(devices.front());
 
-            device.login("12345678");
+            device.login(pin.toStdString());
             SCOPE_EXIT(&device) {
                 device.logout();
             };
@@ -97,7 +98,7 @@ int CertificateModel::exportToSmartCard()
     return 0;
 }
 
-int CertificateModel::deleteAllCertsOnSC()
+int CertificateModel::deleteAllCertsOnRutoken(QString pin)
 {
     try {
             rutoken::pkicore::initialize("/home/gregory/diplom/qSshMaster");
@@ -112,7 +113,7 @@ int CertificateModel::deleteAllCertsOnSC()
 
             auto device = std::move(devices.front());
 
-            device.login("12345678");
+            device.login(pin.toStdString());
             SCOPE_EXIT(&device) {
                 device.logout();
             };

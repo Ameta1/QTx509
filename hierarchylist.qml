@@ -298,9 +298,15 @@ ApplicationWindow {
                     }
                 }
             }
+            SettingTextField {
+                id: pinCodeExport
+
+                infoText: qsTr("Pin code:")
+                echoMode: TextInput.Password
+            }
         }
         onAccepted: {
-            exportCertModel.exportToSmartCard()
+            exportCertModel.exportToRutoken(pinCodeExport.text)
         }
     }
 
@@ -308,17 +314,25 @@ ApplicationWindow {
         id: deleteDialog
 
         anchors.centerIn: parent
-
         width: parent.width/2
 
         standardButtons: Dialog.Save | Dialog.Cancel
 
-        contentItem: Text {
-            id: sure
-            text: qsTr("Are you sure?")
+        contentItem: Column {
+            Text {
+                id: sure
+
+                text: qsTr("Are you sure?")
+            }
+            SettingTextField {
+                id: pinCodeDelete
+
+                infoText: qsTr("Pin code:")
+                echoMode: TextInput.Password
+            }
         }
         onAccepted: {
-            exportCertModel.deleteAllCertsOnSC()
+            exportCertModel.deleteAllCertsOnRutoken(pinCodeDelete.text)
         }
     }
 
@@ -326,8 +340,8 @@ ApplicationWindow {
         id: successPopup
         x: Math.round((parent.width - width) / 2)
         y: Math.round((parent.height - height) / 2)
-        width: window.width/2
-        height: window.height/2
+        width: window.width/4
+        height: window.height/4
         modal: true
         focus: true
 
@@ -337,6 +351,7 @@ ApplicationWindow {
             text: qsTr("Success!")
         }
     }
+
     Connections {
         id: reloadModels
 

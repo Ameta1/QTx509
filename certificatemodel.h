@@ -27,8 +27,8 @@ public slots:
     void checkForExport(const int index);
     void uncheckForExport(const int index);
 
-    int exportToSmartCard();
-    int deleteAllCertsOnSC();
+    int exportToRutoken(QString pin);
+    int deleteAllCertsOnRutoken(QString pin);
 private:
     QList<QVariantMap> certificateList;
 };
