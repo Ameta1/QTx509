@@ -3,7 +3,7 @@
 
 #include <QAbstractListModel>
 
-class certificateModel : public QAbstractListModel
+class CertificateModel : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -13,7 +13,7 @@ public:
         ForExportRole
     };
     Q_ENUM(CertificateRole)
-    explicit certificateModel(QObject *parent = nullptr);
+    explicit CertificateModel(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 

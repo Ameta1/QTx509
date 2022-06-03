@@ -33,7 +33,7 @@ namespace sslFunctions {
     int createLeafX509Cert(QString privatekeyFile, QString publickeyFile, QString ancestorKeyfile, QString certFile, Sslinfo sslinfo);
     int signCertReq(QString reqPath);
     int addInfo(X509_NAME *x509Name, Sslinfo sslinfo);
-    void showError();
+    void sslError();
 };
 
 #endif // SSLFUNCTIONS_H

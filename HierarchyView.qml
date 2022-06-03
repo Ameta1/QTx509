@@ -54,15 +54,6 @@ GridLayout {
         readOnly: true
     }
     SettingTextField {
-        id: rootCApassword
-
-        Layout.fillWidth: true
-        implicitWidth: 0
-        text: HierarchyModel.rootCApassword
-        infoText: qsTr("Root CA Password:")
-        readOnly: true
-    }
-    SettingTextField {
         id: cypherSuite
 
         Layout.fillWidth: true
@@ -81,31 +72,12 @@ GridLayout {
         readOnly: true
     }
     SettingTextField {
-        id: chainCASuffix
-
-        Layout.fillWidth: true
-        implicitWidth: 0
-        text: HierarchyModel.chainCASuffix
-        infoText: qsTr("CA chain suffix:")
-        readOnly: true
-    }
-    SettingTextField {
         id: rootCAsuffix
 
         Layout.fillWidth: true
         implicitWidth: 0
         text: HierarchyModel.rootCAsuffix
         infoText: qsTr("CA root suffix:")
-        readOnly: true
-    }
-    SettingTextField {
-        id: intermediateCAPassword
-
-        Layout.fillWidth: true
-        implicitWidth: 0
-        visible: HierarchyModel.threelevels
-        text: HierarchyModel.intermediateCAPassword
-        infoText: qsTr("Intermediate CA Password:")
         readOnly: true
     }
     SettingTextField {

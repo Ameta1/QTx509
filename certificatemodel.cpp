@@ -4,22 +4,20 @@
 #include "pkcs11/common.h"
 #include "openssl/x509.h"
 
-certificateModel::certificateModel(QObject *parent)
+CertificateModel::CertificateModel(QObject *parent)
     : QAbstractListModel(parent)
 {
 }
 
-int certificateModel::rowCount(const QModelIndex &parent) const
+int CertificateModel::rowCount(const QModelIndex &parent) const
 {
-    // For list models only the root node (an invalid parent) should return the list's size. For all
-    // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
 
     return certificateList.count();
 }
 
-QVariant certificateModel::data(const QModelIndex &index, int role) const
+QVariant CertificateModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < rowCount())
         switch (role) {
@@ -30,7 +28,7 @@ QVariant certificateModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-QHash<int, QByteArray> certificateModel::roleNames() const
+QHash<int, QByteArray> CertificateModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles {
         { StringRole, "CertString" },
@@ -39,7 +37,7 @@ QHash<int, QByteArray> certificateModel::roleNames() const
     return roles;
 }
 
-void certificateModel::reload(QString folder, QString filter = "*.*")
+void CertificateModel::reload(QString folder, QString filter)
 {
     QDir certDir(folder + "/certs/");
     QStringList certStringList = certDir.entryList(QStringList(filter),QDir::Files);
@@ -55,20 +53,20 @@ void certificateModel::reload(QString folder, QString filter = "*.*")
     endResetModel();
 }
 
-void certificateModel::checkForExport(const int index)
+void CertificateModel::checkForExport(const int index)
 {
     certificateList[index]["ForExport"] = true;
 }
 
-void certificateModel::uncheckForExport(const int index)
+void CertificateModel::uncheckForExport(const int index)
 {
     certificateList[index]["ForExport"] = false;
 }
 
-int certificateModel::exportToSmartCard()
+int CertificateModel::exportToSmartCard()
 {
     try {
-            rutoken::pkicore::initialize("/home/gregory/diplom/qSshMaster");
+            rutoken::pkicore::initialize(std::string("/usr/lib/")); //NOTE IN BUILDING PROCESS!!
             SCOPE_EXIT() {
                 rutoken::pkicore::deinitialize();
             };
@@ -99,7 +97,7 @@ int certificateModel::exportToSmartCard()
     return 0;
 }
 
-int certificateModel::deleteAllCertsOnSC()
+int CertificateModel::deleteAllCertsOnSC()
 {
     try {
             rutoken::pkicore::initialize("/home/gregory/diplom/qSshMaster");

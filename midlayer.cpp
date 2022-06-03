@@ -125,16 +125,6 @@ QString Midlayer::intermediateCertFilename(QString identificator)
     return folder + "/certs/" + identificator + ".cert.pem";
 }
 
-QString Midlayer::chainCertFilename()
-{
-    return folder + "/certs/" + chainCASuffix + ".cert.pem";
-}
-
-QString Midlayer::csrFilename()
-{
-    return folder + "/csr/" + organization + "csr.pem";
-}
-
 Sslinfo Midlayer::packSslinfo()
 {
     Sslinfo sslinfo;

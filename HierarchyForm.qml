@@ -72,15 +72,6 @@ ScrollView {
                 function onAccepted(){ HierarchyModel.common = common.text}
             }
         }
-        SettingTextField {
-            id: rootCApassword
-            infoText: qsTr("Root CA Password:")
-            text: "1234"
-            Connections {
-                target: scrollView
-                function onAccepted(){ HierarchyModel.rootCApassword = rootCApassword.text}
-            }
-        }
         Label {
             text: qsTr("Cypher suite:")
         }
@@ -110,15 +101,6 @@ ScrollView {
             }
         }
         SettingTextField {
-            id: chainCASuffix
-            text: organization.text + ".chain.ca"
-            infoText: qsTr("CA chain suffix:")
-            Connections {
-                target: scrollView
-                function onAccepted(){ HierarchyModel.chainCASuffix = chainCASuffix.text}
-            }
-        }
-        SettingTextField {
             id: rootCAsuffix
             text: organization.text + ".root.ca"
             infoText: qsTr("CA root suffix:")
@@ -144,7 +126,6 @@ ScrollView {
                 checked: false
                 onClicked: {
                     HierarchyModel.threelevels = stageSelector.checked
-                    intermediateCAPassword.visible = stageSelector.checked
                     intermediateCASuffix.visible = stageSelector.checked
                 }
             }
@@ -153,16 +134,6 @@ ScrollView {
                 text: "3"
                 font.pointSize: 18
                 visible: stageSelector.checked
-            }
-        }
-        SettingTextField {
-            id: intermediateCAPassword
-            visible: false
-            infoText: qsTr("Intermediate CA Password:")
-            text: "1234"
-            Connections {
-                target: scrollView
-                function onAccepted(){ HierarchyModel.intermediateCAPassword = intermediateCAPassword.text}
             }
         }
         SettingTextField {

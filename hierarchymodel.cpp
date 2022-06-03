@@ -1,52 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2017 The Qt Company Ltd.
-** Hierarchy: https://www.qt.io/licensing/
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the hierarchy form at https://www.qt.io/hierarchy-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
 #include <QUrl>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -69,13 +20,10 @@ void HierarchyModel::save()
     settings.insert("city", midlayer.city);
     settings.insert("organization", midlayer.organization);
     settings.insert("common", midlayer.common);
-    settings.insert("rootCApassword", midlayer.rootCApassword);
     settings.insert("cypherSuite", midlayer.cypherSuite);
     settings.insert("daysValid", midlayer.daysValid);
     settings.insert("rootCAsuffix", midlayer.rootCAsuffix);
-    settings.insert("chainCASuffix", midlayer.chainCASuffix);
     if (midlayer.threelevels) {
-        settings.insert("intermediateCAPassword", midlayer.intermediateCAPassword);
         settings.insert("intermediateCASuffix", midlayer.intermediateCASuffix);
     }
 
@@ -105,26 +53,39 @@ void HierarchyModel::createNew()
 
 void HierarchyModel::createRoot()
 {
-    midlayer.generateRootCertificate();
+    if (!midlayer.generateRootCertificate())
+    {
+        emit certListChanged();
+        emit rootCreatedChanged();
+    }
 }
 
 void HierarchyModel::createRootAndIntermediate()
 {
-    midlayer.generateRootCertificate();
-    midlayer.generateIntermediateCertificate(midlayer.intermediateCASuffix);
+    if (!midlayer.generateRootCertificate()) {
+        emit certListChanged();
+        emit rootCreatedChanged();
+    }
+    if (!midlayer.generateIntermediateCertificate(midlayer.intermediateCASuffix)) {
+        emit certListChanged();
+    }
 }
 
 void HierarchyModel::createAdditionalIntermediate(QString identificator)
 {
-    midlayer.generateIntermediateCertificate(identificator);
+    if (!midlayer.generateIntermediateCertificate(identificator)) {
+        emit certListChanged();
+    }
 }
 
 void HierarchyModel::createLeaf(QString identificator, QString ancestorFile)
 {
-    midlayer.generateLeafCertificate(identificator, ancestorFile);
+    if (!midlayer.generateLeafCertificate(identificator, ancestorFile)) {
+        emit certListChanged();
+    }
 }
 
-bool HierarchyModel::rootCreated()
+bool HierarchyModel::isRootCreated()
 {
     return QFile(midlayer.rootCertFilename()).exists();
 }
@@ -154,21 +115,14 @@ void HierarchyModel::load(QString file)
     emit organizationChanged();
     midlayer.common = settings.value("common").toString();
     emit commonChanged();
-    midlayer.rootCApassword = settings.value("rootCApassword").toString();
-    emit rootCApasswordChanged();
     midlayer.cypherSuite = settings.value("cypherSuite").toString();
     emit cypherSuiteChanged();
     midlayer.daysValid = settings.value("daysValid").toString();
     emit daysValidChanged();
     midlayer.rootCAsuffix = settings.value("rootCAsuffix").toString();
     emit rootCAsuffixChanged();
-    midlayer.chainCASuffix = settings.value("chainCASuffix").toString();
-    emit chainCASuffixChanged();
 
-    if (!(settings.value("intermediateCAPassword").isUndefined()) &&
-            (!settings.value("intermediateCASuffix").isUndefined())) {
-        midlayer.intermediateCAPassword = settings.value("intermediateCAPassword").toString();
-        emit intermediateCAPasswordChanged();
+    if (!settings.value("intermediateCASuffix").isUndefined()) {
         midlayer.intermediateCASuffix = settings.value("intermediateCASuffix").toString();
         emit intermediateCASuffixChanged();
         midlayer.threelevels = true;
@@ -180,6 +134,7 @@ void HierarchyModel::load(QString file)
     }
 
     midlayer.folder = QFileInfo(QUrl(file).toLocalFile()).absolutePath();
+    emit certListChanged();
 }
 
 const QString &HierarchyModel::getFolder() const
@@ -258,19 +213,6 @@ void HierarchyModel::setCommon(const QString &newCommon)
     emit commonChanged();
 }
 
-const QString &HierarchyModel::getRootCApassword() const
-{
-    return midlayer.rootCApassword;
-}
-
-void HierarchyModel::setRootCApassword(const QString &newRootCApassword)
-{
-    if (midlayer.rootCApassword == newRootCApassword)
-        return;
-    midlayer.rootCApassword = newRootCApassword;
-    emit rootCApasswordChanged();
-}
-
 const QString &HierarchyModel::getCypherSuite() const
 {
     return midlayer.cypherSuite;
@@ -310,19 +252,6 @@ void HierarchyModel::setRootCAsuffix(const QString &newRootCAsuffix)
     emit rootCAsuffixChanged();
 }
 
-const QString &HierarchyModel::getChainCASuffix() const
-{
-    return midlayer.chainCASuffix;
-}
-
-void HierarchyModel::setChainCASuffix(const QString &newChainCASuffix)
-{
-    if (midlayer.chainCASuffix == newChainCASuffix)
-        return;
-    midlayer.chainCASuffix = newChainCASuffix;
-    emit chainCASuffixChanged();
-}
-
 bool HierarchyModel::getThreelevels() const
 {
     return midlayer.threelevels;
@@ -334,19 +263,6 @@ void HierarchyModel::setThreelevels(bool newThreelevels)
         return;
     midlayer.threelevels = newThreelevels;
     emit threelevelsChanged();
-}
-
-const QString &HierarchyModel::getIntermediateCAPassword() const
-{
-    return midlayer.intermediateCAPassword;
-}
-
-void HierarchyModel::setIntermediateCAPassword(const QString &newIntermediateCAPassword)
-{
-    if (midlayer.intermediateCAPassword == newIntermediateCAPassword)
-        return;
-    midlayer.intermediateCAPassword = newIntermediateCAPassword;
-    emit intermediateCAPasswordChanged();
 }
 
 const QString &HierarchyModel::getIntermediateCASuffix() const

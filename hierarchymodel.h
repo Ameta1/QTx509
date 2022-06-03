@@ -63,14 +63,14 @@ class HierarchyModel : public QObject
     Q_PROPERTY(QString city READ getCity WRITE setCity NOTIFY cityChanged)
     Q_PROPERTY(QString organization READ getOrganization WRITE setOrganization NOTIFY organizationChanged)
     Q_PROPERTY(QString common READ getCommon WRITE setCommon NOTIFY commonChanged)
-    Q_PROPERTY(QString rootCApassword READ getRootCApassword WRITE setRootCApassword NOTIFY rootCApasswordChanged)
     Q_PROPERTY(QString cypherSuite READ getCypherSuite WRITE setCypherSuite NOTIFY cypherSuiteChanged)
     Q_PROPERTY(QString daysValid READ getDaysValid WRITE setDaysValid NOTIFY daysValidChanged)
     Q_PROPERTY(QString rootCAsuffix READ getRootCAsuffix WRITE setRootCAsuffix NOTIFY rootCAsuffixChanged)
-    Q_PROPERTY(QString chainCASuffix READ getChainCASuffix WRITE setChainCASuffix NOTIFY chainCASuffixChanged)
-    Q_PROPERTY(bool threelevels READ getThreelevels WRITE setThreelevels NOTIFY threelevelsChanged)
-    Q_PROPERTY(QString intermediateCAPassword READ getIntermediateCAPassword WRITE setIntermediateCAPassword NOTIFY intermediateCAPasswordChanged)
+
     Q_PROPERTY(QString intermediateCASuffix READ getIntermediateCASuffix WRITE setIntermediateCASuffix NOTIFY intermediateCASuffixChanged)
+
+    Q_PROPERTY(bool threelevels READ getThreelevels WRITE setThreelevels NOTIFY threelevelsChanged)
+    Q_PROPERTY(bool rootCreated READ isRootCreated NOTIFY rootCreatedChanged)
 
 public:
     HierarchyModel(QObject *parent = nullptr);
@@ -87,22 +87,20 @@ public:
     void setOrganization(const QString &newOrganization);
     const QString &getCommon() const;
     void setCommon(const QString &newCommon);
-    const QString &getRootCApassword() const;
-    void setRootCApassword(const QString &newRootCApassword);
     const QString &getCypherSuite() const;
     void setCypherSuite(const QString &newCypherSuite);
     const QString &getDaysValid() const;
     void setDaysValid(const QString &newDaysValid);
     const QString &getRootCAsuffix() const;
     void setRootCAsuffix(const QString &newRootCAsuffix);
-    const QString &getChainCASuffix() const;
-    void setChainCASuffix(const QString &newChainCASuffix);
-    bool getThreelevels() const;
-    void setThreelevels(bool newThreelevels);
-    const QString &getIntermediateCAPassword() const;
-    void setIntermediateCAPassword(const QString &newIntermediateCAPassword);
+
     const QString &getIntermediateCASuffix() const;
     void setIntermediateCASuffix(const QString &newIntermediateCASuffix);
+
+    bool isRootCreated();
+    bool getThreelevels() const;
+    void setThreelevels(bool newThreelevels);
+
 
 public slots:
     //change void to smth to handle errors
@@ -113,7 +111,6 @@ public slots:
     void createRootAndIntermediate();
     void createAdditionalIntermediate(QString identificator);
     void createLeaf(QString identificator, QString ancestorFile);
-    bool rootCreated();
 
 signals:
     void countryChanged();
@@ -121,16 +118,17 @@ signals:
     void cityChanged();
     void organizationChanged();
     void commonChanged();
-    void rootCApasswordChanged();
     void cypherSuiteChanged();
     void daysValidChanged();
     void rootCAsuffixChanged();
-    void chainCASuffixChanged();
-    void threelevelsChanged();
-    void intermediateCAPasswordChanged();
+
     void intermediateCASuffixChanged();
 
+    void threelevelsChanged();
+    void certListChanged();
     void folderChanged();
+
+    void rootCreatedChanged();
 
 private:
     Midlayer midlayer;

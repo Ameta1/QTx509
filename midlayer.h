@@ -38,21 +38,18 @@ public:
     QString organization;
     QString common;
 
-    QString rootCApassword;
     QString cypherSuite;
     QString daysValid;
     QString rootCAsuffix;
-    QString chainCASuffix;
 
     bool threelevels;
-    QString intermediateCAPassword;
     QString intermediateCASuffix;
 private:
     int generateKeys(bool isRootCert, QString identificator);
     QString intermediateCertFilename(QString identificator);
     QString privateKeyFilename(QString identificator);
     QString publicKeyFilename(QString identificator);
-    QString chainCertFilename();
+
     QString csrFilename();
     Sslinfo packSslinfo();
 };
