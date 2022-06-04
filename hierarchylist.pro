@@ -23,6 +23,9 @@ HEADERS += \
     certificatemodel.h \
     hierarchymodel.h \
     midlayer.h \
+    newhierarchymodel.h \
+    newmidlayer.h \
+    settingscontainer.h \
     settingsmap.h \
     ssldefs.h \
     sslfunctions.h
@@ -32,6 +35,9 @@ SOURCES += \
     main.cpp \
     hierarchymodel.cpp \
     midlayer.cpp \
+    newhierarchymodel.cpp \
+    newmidlayer.cpp \
+    settingscontainer.cpp \
     settingsmap.cpp \
     sslfunctions.cpp
 
@@ -41,6 +47,10 @@ RESOURCES += \
     hierarchylist.qml \
     IdentifierDialog.qml \
     SettingTextField.qml \
+    newMain.qml
     Translation_en.ts
 
 TRANSLATIONS = Translation_en.ts
+
+DISTFILES += \
+    newMain.qml

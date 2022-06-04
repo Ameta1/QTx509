@@ -1,7 +1,5 @@
-#ifndef MIDLAYER_H
-#define MIDLAYER_H
-
-#include <QObject>
+﻿#ifndef NEWMIDLAYER_H
+#define NEWMIDLAYER_H
 
 #include "sslfunctions.h"
 #include "settingsmap.h"
@@ -14,12 +12,13 @@ enum cypherSuites {
     GOSTcsuite
 };
 
-class Midlayer : public QObject
+#define QSettingPair QPair<QString, QVariant>
+
+class newMidlayer
 {
-    Q_OBJECT
 
 public:
-    explicit Midlayer(QObject *parent = nullptr);
+    explicit newMidlayer();
     const QStringList cypherSuitesList = {"ecdsa, prime256v1, sha256",
                                     "rsa, 4096, sha256",
                                     "gostr34102012_256a, GC256A, STRIBOG_256",
@@ -28,31 +27,21 @@ public:
     int generateRootCertificate();
     int generateIntermediateCertificate(QString identificator);
     int generateLeafCertificate(QString identificator, QString ancestoCertFile);
-    QString rootCertFilename();
+    QString rootCertFilename() const;
 
-    QString folder;
-
-    QString country;
-    QString province;
-    QString city;
-    QString organization;
-    QString common;
-
-    QString cypherSuite;
-    QString daysValid;
-    QString rootCAsuffix;
-
-    bool threelevels;
-    QString intermediateCASuffix;
-
+    QVariant findSetting(QString name) const;
+    int changeSetting(QString name, QString value);
+    int size() const;
+    QList<QSettingPair> settingsList;
 private:
+    int generateCertificate(QString identificator, QString ancestoCertFile, bool isRootCert);
     int generateKeys(bool isRootCert, QString identificator);
-    QString intermediateCertFilename(QString identificator);
-    QString privateKeyFilename(QString identificator);
-    QString publicKeyFilename(QString identificator);
+    QString intermediateCertFilename(QString identificator) const;
+    QString privateKeyFilename(QString identificator) const;
+    QString publicKeyFilename(QString identificator) const;
 
     QString csrFilename();
     Sslinfo packSslinfo();
 };
 
-#endif // MIDLAYER_H
+#endif // NEWMIDLAYER_H

@@ -7,8 +7,8 @@ extern "C"
 {
    #include<gost-engine.h>
 }
-
-#include "hierarchymodel.h"
+#include "settingscontainer.h"
+#include "newhierarchymodel.h"
 #include "ssldefs.h"
 #include "certificatemodel.h"
 
@@ -26,10 +26,11 @@ int main(int argc, char *argv[])
 
     QQuickStyle::setStyle("Material");
     qmlRegisterType<CertificateModel>("Custom.CertificateModel", 1, 0, "CertificateModel");
-    QScopedPointer<HierarchyModel> hierarchyModel(new HierarchyModel);
+    qmlRegisterType<settingsContainer>("Custom.SettingsContainer", 1, 0, "SettingsContainer");
+    QScopedPointer<newHierarchyModel> hierarchyModel(new newHierarchyModel);
     QQmlApplicationEngine qmlApplicationEngine;
     qmlRegisterSingletonInstance("Custom.HierarchyModel", 1, 0, "HierarchyModel", hierarchyModel.get());
-    qmlApplicationEngine.load(QUrl(QStringLiteral("qrc:/hierarchylist.qml")));
+    qmlApplicationEngine.load(QUrl(QStringLiteral("qrc:/newMain.qml")));
 
     return app.exec();
 }
