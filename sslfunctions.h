@@ -6,9 +6,6 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
-//OSSL_LIB_CTX_load_config
-//./Configure --debug no-autoload-config no-gost no-tests
-
 #define x509version 3
 #define rsabits 4096
 

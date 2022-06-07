@@ -101,7 +101,7 @@ int CertificateModel::exportToRutoken(QString pin)
 int CertificateModel::deleteAllCertsOnRutoken(QString pin)
 {
     try {
-            rutoken::pkicore::initialize("/home/gregory/diplom/qSshMaster");
+            rutoken::pkicore::initialize("/usr/lib/");
             SCOPE_EXIT() {
                 rutoken::pkicore::deinitialize();
             };
